@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from doctors.models import doctorDetails
-from hospitals.models import HospitalDetails, Department, LabReports
+from hospitals.models import HospitalDetails, Department, LabReports, DepartmentHospitalMapping
 from patients.models import Patient
 
 
@@ -47,5 +47,5 @@ class LabReportsSerializer(serializers.ModelSerializer):
 class DepartmentMappingSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer()
     class Meta:
-        model = Department
+        model = DepartmentHospitalMapping
         fields = "__all__"

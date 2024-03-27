@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 
-from hospitals.models import HospitalDetails
+from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping
 from patients.models import Patient
 from users.models import UsersDetails
 
@@ -101,6 +101,12 @@ class DoctorsManagement:
             return appointments
         else:
             raise Exception("It Looks like you have missed something, Please try again")
+
+    @staticmethod
+    def fetch_all_appointments(data):
+        appointments = Appointment.objects.filter(
+        ).select_related("doctor", "patient")
+        return appointments
 
 
     @staticmethod
@@ -295,6 +301,11 @@ class DoctorsManagement:
     @staticmethod
     def doctor_leave_fetch(request, data):
         doctor_leave = DoctorLeave.objects.filter(doctor__hospital_id=request.user.hospital).select_related("doctor")
+        return doctor_leave
+
+    @staticmethod
+    def fetch_hospital_appointments(request, data):
+        doctor_leave = Appointment.objects.filter(doctor__hospital_id=request.user.hospital).exclude(status="created").select_related("doctor").select_related("patient")
         return doctor_leave
 
     @staticmethod
@@ -586,6 +597,9 @@ class DoctorsManagement:
     @staticmethod
     def add_new_doctor_hospital(request, data):
         hospital_id = request.user.hospital
+        hospital_admin_id = data.get("HospitalsId", False)
+        if hospital_admin_id:
+            hospital_id = hospital_admin_id
         full_name = data.get("fullName", None)
         email = data.get("email", None)
         phone = data.get("phoneNumber", None)
@@ -649,3 +663,38 @@ class DoctorsManagement:
                 ResetPasswordRequest.objects.create(doctor=doctor[0], comment=comment)
         else:
             raise Exception("You are missing something")
+
+
+    @staticmethod
+    def fetch_all_software_departments(request, data):
+        return Department.objects.filter()
+
+    @staticmethod
+    def add_hospital_department(request, data):
+        department_id = data.get("departmentId")
+        department_name = data.get("departmentName")
+        department_description = data.get("departmentComments")
+        if department_id and department_id != "new":
+            DepartmentHospitalMapping.objects.create(
+                department_id=department_id,
+                hospital_id=request.user.hospital
+            )
+        if department_name and department_description:
+            department_id = Department.objects.create(
+                name=department_name,
+                description=department_description
+            )
+            DepartmentHospitalMapping.objects.create(
+                department=department_id,
+                hospital_id=request.user.hospital
+            )
+
+    @staticmethod
+    def add_hospital_admin(request, data):
+        department_name = data.get("departmentName")
+        department_description = data.get("departmentComments")
+        if department_name and department_description:
+            department_id = Department.objects.create(
+                name=department_name,
+                description=department_description
+            )

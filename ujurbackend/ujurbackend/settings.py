@@ -41,11 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-'corsheaders',
+    'corsheaders',
     'users',
     'patients',
     'doctors',
     'hospitals',
+    "admin_hospital"
 
 ]
 

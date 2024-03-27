@@ -9,6 +9,7 @@ urlpatterns = [
     path(r'api/v2/patients/', include('patients.urls'), name="patients"),
     path(r'api/v2/doctors/', include('doctors.urls'), name="doctors"),
     path(r'api/v2/hospitals/', include('hospitals.urls'), name="hospitals"),
+    path(r'api/v2/admin/', include('admin_hospital.urls'), name="admin"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,4 +1,5 @@
 from django.contrib import admin
-from admin.models import mainAdminDetails
+from admin_hospital.models import mainAdminDetails
+
 
 admin.site.register(mainAdminDetails)

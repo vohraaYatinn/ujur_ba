@@ -11,6 +11,14 @@ class HospitalManager:
         return HospitalDetails.objects.filter(id=data.get("hospitalId")).prefetch_related("hospital_doctors")[0]
 
     @staticmethod
+    def fetch_all_doctors_hospital():
+        return HospitalDetails.objects.filter().prefetch_related("hospital_doctors")[0]
+
+    @staticmethod
+    def fetch_all_admin_hospital(data):
+        return HospitalDetails.objects.filter()
+
+    @staticmethod
     def fetch_lab_reports(request):
         return LabReports.objects.filter(Patients_id=request.user.id).select_related("hospital")
 
@@ -26,6 +34,10 @@ class HospitalManager:
     @staticmethod
     def fetch_hospital_departments(request, data):
         return DepartmentHospitalMapping.objects.filter(hospital_id=request.user.hospital).select_related("department")
+
+    @staticmethod
+    def fetch_all_admin_departments(request, data):
+        return Department.objects.filter()
 
 
     @staticmethod

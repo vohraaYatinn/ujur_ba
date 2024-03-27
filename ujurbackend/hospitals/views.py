@@ -157,6 +157,21 @@ class FetchDoctorLeaveRequests(APIView):
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
+class FetchHospitalAppointments(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            appointment_objs = DoctorsManagement.fetch_hospital_appointments(request, data)
+            latest_appointment_data = AppointmentWithDepartmentandDoctorSerializer(appointment_objs, many=True).data
+            return Response(
+                {"result": "success", "data": latest_appointment_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
 class FetchDoctorLeaveRequests(APIView):
     permission_classes = [IsAuthenticatedHospital]
 
@@ -191,6 +206,22 @@ class FetchHospitalDepartments(APIView):
             data = request.query_params
             departments = HospitalManager.fetch_hospital_departments(request, data)
             departments_data = DepartmentMappingSerializer(departments, many=True).data
+
+            return Response(
+                {"result": "success", "data": departments_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class FetchAllDepartments(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            departments = HospitalManager.fetch_all_admin_departments(request, data)
+            departments_data = DepartmentSerializer(departments, many=True).data
 
             return Response(
                 {"result": "success", "data": departments_data}, 200)
@@ -260,5 +291,45 @@ class AddPatientsHospitals(APIView):
             data = request.data
             all_patients = DoctorsManagement.add_patients_hospital(request, data)
             return Response({"result" : "success", "message": "Patient Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class GetSoftwareDepartments(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.data
+            get_departments = DoctorsManagement.fetch_all_software_departments(request, data)
+            reviews_serialized_data = DepartmentSerializer(get_departments, many=True).data
+
+            return Response({"result" : "success", "data": reviews_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class AddDepartmentsHospitals(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            all_patients = DoctorsManagement.add_hospital_department(request, data)
+            return Response({"result" : "success", "message": "New Department Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class AddDepartmentsAdmin(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            all_patients = DoctorsManagement.add_hospital_admin(request, data)
+            return Response({"result" : "success", "message": "New Department Added Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

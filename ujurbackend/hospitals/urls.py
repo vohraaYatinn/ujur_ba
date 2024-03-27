@@ -2,7 +2,8 @@ from django.urls import include, path
 
 from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabReports, HospitalAdminLogin, \
     HospitalDoctors, HospitalDoctorsProfile, HospitalAddDoctors, HandlePasswordRequest, FetchDoctorLeaveRequests, \
-    FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals
+    FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
+    FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -19,10 +20,12 @@ urlpatterns = [
     path(r'change-doctors-passwword/', HandlePasswordRequest.as_view(), name="change-doctors-password"),
     path(r'fetch-leave-requests/', FetchDoctorLeaveRequests.as_view(), name="fetch-leave-requests"),
     path(r'perform-leave-action/', FetchDoctorLeaveRequests.as_view(), name="perform-leave-action"),
-    path(r'fetch-appointments-for-hospitals/', FetchDoctorLeaveRequests.as_view(), name="fetch-appointments-for-hospitals"),
+    path(r'fetch-appointments-for-hospitals/', FetchHospitalAppointments.as_view(), name="fetch-appointments-for-hospitals"),
     path(r'fetch-departments-for-hospitals/', FetchHospitalDepartments.as_view(), name="fetch-departments-for-hospitals"),
     path(r'fetch-reviews-for-hospitals/', FetchHospitalReviews.as_view(), name="fetch-reviews-for-hospitals"),
     path(r'fetch-patients-for-hospitals/', FetchPatientsHospitals.as_view(), name="fetch-patients-for-hospitals"),
     path(r'add-patients-for-hospitals/', AddPatientsHospitals.as_view(), name="add-patients-for-hospitals"),
+    path(r'fetch-software-department/', GetSoftwareDepartments.as_view(), name="fetch-software-department"),
+    path(r'add-department-hospital/', AddDepartmentsHospitals.as_view(), name="add-department-hospital"),
 
 ]

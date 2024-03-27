@@ -1,6 +1,7 @@
-from admin.models import mainAdminDetails
+from admin_hospital.models import mainAdminDetails
 
-class AdminManagement:
+
+class AdminMainManagement:
     @staticmethod
     def login_main_admin(data):
         email = data.get("email")
