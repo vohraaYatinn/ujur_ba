@@ -51,6 +51,7 @@ class doctorSlots(models.Model):
 # payment past when completed
 # payment missed when not present there
 # appointment canceled present there
+# appointment completed present there
 
 
 class Appointment(models.Model):

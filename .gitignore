@@ -1,1 +1,15 @@
 ujurbackend/venv
+ujurbackend/__pycache__
+ujurbackend/admin/__pycache__
+ujurbackend/hospitals/__pycache__
+ujurbackend/admin_hospital/__pycache__
+ujurbackend/patients/__pycache__
+ujurbackend/users/__pycache__
+ujurbackend/admin/__pycache__
+ujurbackend/doctors/__pycache__
+ujurbackend/doctors/migrations/__pycache__
+ujurbackend/hospitals/migrations/__pycache__
+ujurbackend/patients/migrations/__pycache__
+ujurbackend/users/migrations/__pycache__
+ujurbackend/admin_hospital/migrations/__pycache__
+ujurbackend/ujurbackend/__pycache__

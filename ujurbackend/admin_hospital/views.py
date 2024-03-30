@@ -4,7 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from admin_hospital.manager import AdminMainManagement
-from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer
+from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
+    DoctorModelWithDepartmentHospitalSerializer
 from doctors.manager import DoctorsManagement
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors
@@ -46,7 +47,9 @@ class FetchHospitalDetails(APIView):
     @staticmethod
     def get(request):
         try:
-            hospital_doc_data = HospitalManager.fetch_all_doctors_hospital()
+            data=request.query_params
+            hospital_id = data.get('hospitalId', False)
+            hospital_doc_data = HospitalManager.fetch_all_doctors_hospital(hospital_id)
             hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
@@ -64,3 +67,26 @@ class FetchAllAppointmentsAdmin(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
+class FetchAllDoctors(APIView):
+    @staticmethod
+    def get(request):
+        try:
+            data=request.query_params
+            hospital_id = data.get('hospitalId', False)
+            hospital_doc_data = HospitalManager.fetch_all_doctors_hospital(hospital_id)
+            hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
+            return Response({"result" : "success", "data": hospital_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class FetchAllDoctors(APIView):
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            hospital_doc_data = HospitalManager.fetch_all_doctors_admin(data)
+            hospital_serialized_data = DoctorModelWithDepartmentHospitalSerializer(hospital_doc_data,many=True).data
+            return Response({"result" : "success", "data": hospital_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

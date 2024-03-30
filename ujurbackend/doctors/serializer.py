@@ -190,6 +190,15 @@ class resetPasswordsDoctor(serializers.ModelSerializer):
 
 
 class DoctorReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
+    doctor = DoctorModelWithDepartmentHospitalSerializer()
+    patient = PatientDetailsFprDoctorSerializer()
+    class Meta:
+        model = PatientDoctorReviews
+        fields = "__all__"
+
+
+
+class DoctorReviewsWithPatientsAndDoctorHospitalSerializer(serializers.ModelSerializer):
     doctor = DoctorModelSerializer(many=True)
     patient = PatientDetailsFprDoctorSerializer()
     class Meta:

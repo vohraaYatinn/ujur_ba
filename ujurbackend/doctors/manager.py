@@ -104,7 +104,29 @@ class DoctorsManagement:
 
     @staticmethod
     def fetch_all_appointments(data):
-        appointments = Appointment.objects.filter(
+        filters = Q()
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        date = data.get('date', False)
+        slots = data.get('slots', False)
+        status = data.get('status', False)
+        department = data.get('department', False)
+        hospitals = data.get('hospitalSearch', False)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if date:
+            filters &= Q(date_appointment__date=date)
+        if slots:
+            filters &= Q(slot=slots)
+        if status:
+            filters &= Q(status=status)
+        if department:
+            filters &= Q(doctor__department=department)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        appointments = Appointment.objects.filter(filters
         ).select_related("doctor", "patient")
         return appointments
 
@@ -129,10 +151,31 @@ class DoctorsManagement:
         return reviews
 
     @staticmethod
-    def all_patients_hospital(request, data):
-        patient_ids = Appointment.objects.values('patient').distinct()
+    def all_patients_admin(request, data):
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        hospitals = data.get('hospitalSearch', False)
+        department = data.get('department', False)
+
+        filters = Q()
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = patient_name)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        if department:
+            filters &= Q(doctor__department=department)
+        patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
         unique_patients = Patient.objects.filter(id__in=patient_ids)
         return unique_patients
+
+    @staticmethod
+    def all_patients_hospital(request, data):
+        patient_ids = Appointment.objects.filter(doctor__hospital_id=request.user.hospital).values('patient').distinct()
+        unique_patients = Patient.objects.filter(id__in=patient_ids)
+        return unique_patients
+
 
     @staticmethod
     def add_patients_hospital(request, data):
@@ -694,7 +737,26 @@ class DoctorsManagement:
         department_name = data.get("departmentName")
         department_description = data.get("departmentComments")
         if department_name and department_description:
-            department_id = Department.objects.create(
+            Department.objects.create(
                 name=department_name,
                 description=department_description
             )
+        else:
+            raise Exception("Department Name and Description is compulsory")
+
+    @staticmethod
+    def get_all_reviews(request, data):
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        hospitals = data.get('hospitalSearch', False)
+        department = data.get('department', False)
+        filters = Q()
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = patient_name)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        if department:
+            filters &= Q(doctor__department=department)
+        return PatientDoctorReviews.objects.filter().select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")

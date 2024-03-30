@@ -49,3 +49,4 @@ class DepartmentMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentHospitalMapping
         fields = "__all__"
+

@@ -220,7 +220,7 @@ class FetchAllDepartments(APIView):
     def get(request):
         try:
             data = request.query_params
-            departments = HospitalManager.fetch_all_admin_departments(request, data)
+            departments = HospitalManager.fetch_all_admin_departments(data)
             departments_data = DepartmentSerializer(departments, many=True).data
 
             return Response(
@@ -254,16 +254,28 @@ class FetchHospitalReviews(APIView):
             return Response({"result" : "failure", "message":str(e)}, 500)
 
 
-class FetchPatientsHospitals(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+class FetchPatientsAdmin(APIView):
+    permission_classes = []
 
     @staticmethod
     def get(request):
         try:
             data = request.query_params
-            reviews = DoctorsManagement.hospital_reviews(request, data)
-            reviews_serialized_data = DoctorReviewsWithPatientsAndDoctorSerializer(reviews).data
+            all_patients = DoctorsManagement.all_patients_admin(request, data)
+            reviews_serialized_data = PatientDetailsFprDoctorSerializer(all_patients, many=True).data
             return Response({"result" : "success", "data": reviews_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class AddHospitalAdmin(APIView):
+    permission_classes = []
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.add_admin_hospital(request, data)
+            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -329,7 +341,22 @@ class AddDepartmentsAdmin(APIView):
     def post(request):
         try:
             data = request.data
-            all_patients = DoctorsManagement.add_hospital_admin(request, data)
+            DoctorsManagement.add_hospital_admin(request, data)
             return Response({"result" : "success", "message": "New Department Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class fetchAllReviews(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            all_reviews = DoctorsManagement.get_all_reviews(request, data)
+            reviews_serialized_data = DoctorReviewsWithPatientsAndDoctorSerializer(all_reviews, many=True).data
+
+            return Response({"result" : "success", "data": reviews_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
