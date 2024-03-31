@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
+from admin_hospital.models import mainAdminDetails
 from doctors.models import doctorDetails, doctorSlots, PatientDoctorReviews, Appointment, FavDoctors, DoctorLeave, \
     ResetPasswordRequest
+from hospitals.models import HospitalAdmin
 from hospitals.serializer import HospitalSerializer, DepartmentSerializer, HospitalDoctorSerializer
 from patients.models import Patient
 from users.serializer import UserSerializer
@@ -194,4 +197,16 @@ class DoctorReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
     patient = PatientDetailsFprDoctorSerializer()
     class Meta:
         model = PatientDoctorReviews
+        fields = "__all__"
+
+class AdminsSerailizer(serializers.ModelSerializer):
+    class Meta:
+        model = mainAdminDetails
+        fields = "__all__"
+
+class HospitalAdminsSerailizer(serializers.ModelSerializer):
+    hospital = HospitalSerializer()
+
+    class Meta:
+        model = HospitalAdmin
         fields = "__all__"

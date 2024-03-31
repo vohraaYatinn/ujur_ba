@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
-    DoctorModelWithDepartmentHospitalSerializer
+    DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer
 from doctors.manager import DoctorsManagement
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors
@@ -88,5 +88,63 @@ class FetchAllDoctors(APIView):
             hospital_doc_data = HospitalManager.fetch_all_doctors_admin(data)
             hospital_serialized_data = DoctorModelWithDepartmentHospitalSerializer(hospital_doc_data,many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleAdmin(APIView):
+    permission_classes = []
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            admin = AdminMainManagement.fetch_admin_data(data)
+            admin_serialized_data = AdminsSerailizer(admin,many=True).data
+            return Response({"result" : "success", "data": admin_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.add_admin_form(data)
+            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleDeleteAdmin(APIView):
+    permission_classes = []
+
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.handle_delete_admin(data)
+            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleHospitalAdmin(APIView):
+    permission_classes = []
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            admin = AdminMainManagement.fetch_hospital_admin_data(data)
+            admin_serialized_data = HospitalAdminsSerailizer(admin,many=True).data
+            return Response({"result" : "success", "data": admin_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.add_hospital_admin_data(data)
+            return Response({"result" : "success", "message": "Hospital Admin added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

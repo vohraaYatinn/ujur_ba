@@ -3,7 +3,7 @@ from django.urls import include, path
 from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabReports, HospitalAdminLogin, \
     HospitalDoctors, HospitalDoctorsProfile, HospitalAddDoctors, HandlePasswordRequest, FetchDoctorLeaveRequests, \
     FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
-    FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals
+    FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -27,5 +27,6 @@ urlpatterns = [
     path(r'add-patients-for-hospitals/', AddPatientsHospitals.as_view(), name="add-patients-for-hospitals"),
     path(r'fetch-software-department/', GetSoftwareDepartments.as_view(), name="fetch-software-department"),
     path(r'add-department-hospital/', AddDepartmentsHospitals.as_view(), name="add-department-hospital"),
+    path(r'delete_handle/', HandleDeleteHospital.as_view(), name="delete_handle"),
 
 ]

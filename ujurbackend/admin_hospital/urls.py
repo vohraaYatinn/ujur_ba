@@ -1,7 +1,7 @@
 from django.urls import path
 
 from admin_hospital.views import MainAdminLogin, FetchAllHospital, FetchHospitalDetails, FetchAllAppointmentsAdmin, \
-    FetchAllDoctors
+    FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin
 from hospitals.views import FetchAllDepartments, AddDepartmentsAdmin, fetchAllReviews, FetchPatientsAdmin, \
     AddHospitalAdmin
 
@@ -17,6 +17,11 @@ urlpatterns = [
     path(r'fetch-all-reviews/', fetchAllReviews.as_view(), name="fetch-all-reviews"),
     path(r'fetch-patients-admin/', FetchPatientsAdmin.as_view(), name="fetch-patients-admin"),
     path(r'add-hospital-admin/', AddHospitalAdmin.as_view(), name="add-hospital-admin"),
+    path(r'add-admin/', HandleAdmin.as_view(), name="add-hospital-admin"),
+    path(r'get-admins-data/', HandleAdmin.as_view(), name="add-hospital-admin"),
+    path(r'delete-handle/', HandleDeleteAdmin.as_view(), name="add-hospital-admin"),
+    path(r'fetch-hospital-admin/', HandleHospitalAdmin.as_view(), name="fetch-hospital-admin"),
+    path(r'add-hospital-admin-user/', HandleHospitalAdmin.as_view(), name="add-hospital-admin"),
 
 ]
 

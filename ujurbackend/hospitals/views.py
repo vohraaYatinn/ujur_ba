@@ -360,3 +360,16 @@ class fetchAllReviews(APIView):
             return Response({"result" : "success", "data": reviews_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleDeleteHospital(APIView):
+    permission_classes = []
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = HospitalManager.handle_delete_hospital(data)
+            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

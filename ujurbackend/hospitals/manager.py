@@ -74,6 +74,26 @@ class HospitalManager:
             department_id = Department.objects.create(name=department_name, description=department_desc)
         return DepartmentHospitalMapping.objects.create(hospital_id=request.user.hospital, department=department_id).select_related("department")
 
+    @staticmethod
+    def handle_delete_hospital(data):
+        action = data.get("action", None)
+        type = data.get("type", None)
+        id = data.get("id", None)
+        if type and id and action:
+            if action == "delete":
+                if type == "doctor":
+                    return doctorDetails.objects.get(id=id).delete()
+                elif type == "hospital":
+                    return HospitalDetails.objects.get(id=id).delete()
+            elif action == "active":
+                doctor = doctorDetails.objects.get(id=id)
+                doctor.is_active = not doctor.is_active
+                doctor.save()
+                return doctor
+
+        else:
+            raise Exception("Something is missing in the form")
+
 
     @staticmethod
     def add_admin_hospital(request, data):
