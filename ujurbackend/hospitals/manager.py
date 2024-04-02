@@ -10,8 +10,15 @@ class HospitalManager:
         return HospitalDetails.objects.filter()[:int(data.get("pageNumber"))]
 
     @staticmethod
-    def fetch_doctors_hospital(data):
-        return HospitalDetails.objects.filter(id=data.get("hospitalId")).prefetch_related("hospital_doctors")[0]
+    def fetch_doctors_hospital(dataReq, data):
+        filters = Q(hospital_id=data.get("hospitalId"))
+        doctor_name = dataReq.get('doctorName', False)
+        department = dataReq.get('department', False)
+        if doctor_name:
+            filters &= Q(full_name__icontains = doctor_name)
+        if department:
+            filters &= Q(department=department)
+        return doctorDetails.objects.filter(filters)
 
     @staticmethod
     def fetch_all_doctors_hospital(hospital_id):
@@ -54,7 +61,15 @@ class HospitalManager:
 
     @staticmethod
     def fetch_hospital_departments(request, data):
-        return DepartmentHospitalMapping.objects.filter(hospital_id=request.user.hospital).select_related("department")
+        department = data.get('department', False)
+        filters = Q(hospital_id=request.user.hospital)
+        if department:
+            filters &= Q(department_id=department)
+        return DepartmentHospitalMapping.objects.filter(filters).select_related("department")
+
+    @staticmethod
+    def get_departments(department_id):
+        return Department.objects.filter(id__in=department_id)
 
     @staticmethod
     def fetch_all_admin_departments(data):
@@ -106,3 +121,23 @@ class HospitalManager:
         logo = data.get("logo", None)
         if hospital_name and email and phone and website and description and logo:
             HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, website=website, logo=logo, description=description, address=address)
+
+    @staticmethod
+    def fetch_hospital_admin_data(request, data):
+        hospital_id = request.user.hospital
+        filters = Q(hospital_id=hospital_id)
+        return HospitalAdmin.objects.filter(filters).select_related("hospital")
+
+    @staticmethod
+    def add_hospital_admin_data(request, data):
+        full_name = data.get("fullName", None)
+        email = data.get("email", None)
+        password = data.get("password", None)
+        hospital = request.user.hospital
+        return HospitalAdmin.objects.create(
+            name=full_name,
+            username=email,
+            password=password,
+            hospital_id=hospital
+        )
+

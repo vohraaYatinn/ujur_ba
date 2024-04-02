@@ -7,7 +7,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     DoctorSlotsSerializer, AppointmentSerializer, AppointmentWithDepartmentSerializer, DoctorFavSerializer, \
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
-    AppointmentWithDoctorAndPatientSerializer
+    AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -184,7 +184,8 @@ class doctorLogin(APIView):
                     'doctor': login_doctor.id
                 }
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
-                return Response({"result": "success", "message": "Doctor login successfully", "token": token}, 200)
+                doctor_serializer = DoctorModelSerializer(login_doctor).data
+                return Response({"result": "success", "message": "Doctor login successfully", "token": token, "doctor":doctor_serializer}, 200)
             else:
                 return Response({"result": "failure", "message": "Please Check the Username or Password", "token": False}, 200)
         except Exception as e:

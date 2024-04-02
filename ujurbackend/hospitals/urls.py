@@ -3,7 +3,8 @@ from django.urls import include, path
 from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabReports, HospitalAdminLogin, \
     HospitalDoctors, HospitalDoctorsProfile, HospitalAddDoctors, HandlePasswordRequest, FetchDoctorLeaveRequests, \
     FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
-    FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital
+    FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital, HandleDoctors, \
+    HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -28,5 +29,10 @@ urlpatterns = [
     path(r'fetch-software-department/', GetSoftwareDepartments.as_view(), name="fetch-software-department"),
     path(r'add-department-hospital/', AddDepartmentsHospitals.as_view(), name="add-department-hospital"),
     path(r'delete_handle/', HandleDeleteHospital.as_view(), name="delete_handle"),
+    path(r'all-doctors/', HandleDoctors.as_view(), name="all-doctors"),
+    path(r'all-departments/', HandleDepartments.as_view(), name="all-departments"),
+    path(r'all-doctors-hospital-reviews/', HospitalDoctorReviews.as_view(), name="all-doctors-hospital-reviews"),
+    path(r'fetch-hospital-admin/', HandleHospitalAdmins.as_view(), name="fetch-hospital-admin"),
+    path(r'add-hospital-admin-user/', HandleHospitalAdmins.as_view(), name="add-hospital-admin-user"),
 
 ]

@@ -1,12 +1,15 @@
 from django.urls import path
 
 from admin_hospital.views import MainAdminLogin, FetchAllHospital, FetchHospitalDetails, FetchAllAppointmentsAdmin, \
-    FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin
+    FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin, FetchMainDashboardDashboard, \
+    FetchHospitalDashboardDashboard
 from hospitals.views import FetchAllDepartments, AddDepartmentsAdmin, fetchAllReviews, FetchPatientsAdmin, \
     AddHospitalAdmin
 
 urlpatterns = [
     # doctor app api
+    path(r'fetch-dashboard-details-admin/', FetchMainDashboardDashboard.as_view(), name="fetch-dashboard-details-admin"),
+    path(r'fetch-dashboard-details-hospital/', FetchHospitalDashboardDashboard.as_view(), name="fetch-dashboard-details-hospital"),
     path(r'login-main-admin/', MainAdminLogin.as_view(), name="login-main-admin"),
     path(r'all-hospitals/', FetchAllHospital.as_view(), name="all-hospitals"),
     path(r'hospital-profile/', FetchHospitalDetails.as_view(), name="all-hospitals"),

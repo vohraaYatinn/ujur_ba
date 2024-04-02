@@ -1,5 +1,6 @@
 import jwt
-from rest_framework.permissions import IsAuthenticated, IsDoctorAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsDoctorAuthenticated, IsAuthenticatedAdminPanel, \
+    IsAuthenticatedHospital
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -22,7 +23,7 @@ class MainAdminLogin(APIView):
             if login_admin:
                 payload = {
                     'email': login_admin.email,
-                    'admin': login_admin.id
+                    'main_admin': login_admin.id
                 }
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
                 return Response({"result": "success", "message": "Admin login successfully", "token": token}, 200)
@@ -31,7 +32,31 @@ class MainAdminLogin(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
+
+class FetchMainDashboardDashboard(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def get(request):
+        try:
+            counts = AdminMainManagement.fetch_main_admin_dashboard()
+            return Response({"result" : "success", "data": counts}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class FetchHospitalDashboardDashboard(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+    @staticmethod
+    def get(request):
+        try:
+            counts = AdminMainManagement.fetch_main_hospital_dashboard(request)
+            return Response({"result" : "success", "data": counts}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
 class FetchAllHospital(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
     @staticmethod
     def get(request):
         try:
@@ -44,6 +69,8 @@ class FetchAllHospital(APIView):
 
 
 class FetchHospitalDetails(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+
     @staticmethod
     def get(request):
         try:
@@ -57,6 +84,8 @@ class FetchHospitalDetails(APIView):
 
 
 class FetchAllAppointmentsAdmin(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+
     @staticmethod
     def get(request):
         try:
@@ -81,6 +110,8 @@ class FetchAllDoctors(APIView):
 
 
 class FetchAllDoctors(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+
     @staticmethod
     def get(request):
         try:
@@ -93,7 +124,7 @@ class FetchAllDoctors(APIView):
 
 
 class HandleAdmin(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def get(request):
@@ -115,7 +146,7 @@ class HandleAdmin(APIView):
 
 
 class HandleDeleteAdmin(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticatedAdminPanel]
 
 
     @staticmethod
@@ -129,7 +160,7 @@ class HandleDeleteAdmin(APIView):
 
 
 class HandleHospitalAdmin(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticatedAdminPanel]
     @staticmethod
     def get(request):
         try:

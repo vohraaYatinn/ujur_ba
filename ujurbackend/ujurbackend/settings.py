@@ -67,8 +67,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 
 'http://localhost:3001',
-'http://127.0.0.1:3000'
+'http://127.0.0.1:3000',
+'http://91.108.110.87:3000',
+'http://91.108.110.87:3001',
+'http://91.108.110.87:3002'
 ]
+
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -138,9 +142,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-CSRF_TRUSTED_ORIGINS = [    'http://localhost:3000', 'http://localhost:3001', "http://127.0.0.1:3000"
+CSRF_TRUSTED_ORIGINS = [    'http://localhost:3000', 'http://localhost:3001', "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
+'http://91.108.110.87:3001',
+'http://91.108.110.87:3002'
 ]
-CORS_ORIGIN_WHITELIST = [    'http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000"
+CORS_ORIGIN_WHITELIST = [    'http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
+'http://91.108.110.87:3001',
+'http://91.108.110.87:3002'
 ]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

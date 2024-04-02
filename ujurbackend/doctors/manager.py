@@ -161,7 +161,7 @@ class DoctorsManagement:
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
-            filters &= Q(doctor__full_name__icontains = patient_name)
+            filters &= Q(doctor__full_name__icontains = doctor_name)
         if hospitals:
             filters &= Q(doctor__hospital=hospitals)
         if department:
@@ -172,7 +172,18 @@ class DoctorsManagement:
 
     @staticmethod
     def all_patients_hospital(request, data):
-        patient_ids = Appointment.objects.filter(doctor__hospital_id=request.user.hospital).values('patient').distinct()
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        department = data.get('department', False)
+
+        filters = Q(doctor__hospital_id=request.user.hospital)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if department:
+            filters &= Q(doctor__department=department)
+        patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
         unique_patients = Patient.objects.filter(id__in=patient_ids)
         return unique_patients
 
@@ -343,12 +354,38 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_leave_fetch(request, data):
-        doctor_leave = DoctorLeave.objects.filter(doctor__hospital_id=request.user.hospital).select_related("doctor")
+        filters = Q(doctor__hospital_id=request.user.hospital)
+        doctor_name = data.get('doctorName', False)
+        department = data.get('department', False)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if department:
+            filters &= Q(doctor__department=department)
+        doctor_leave = DoctorLeave.objects.filter(filters).select_related("doctor")
         return doctor_leave
 
     @staticmethod
     def fetch_hospital_appointments(request, data):
-        doctor_leave = Appointment.objects.filter(doctor__hospital_id=request.user.hospital).exclude(status="created").select_related("doctor").select_related("patient")
+        filters = Q(doctor__hospital_id=request.user.hospital)
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        date = data.get('date', False)
+        slots = data.get('slots', False)
+        status = data.get('status', False)
+        department = data.get('department', False)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if date:
+            filters &= Q(date_appointment__date=date)
+        if slots:
+            filters &= Q(slot=slots)
+        if status:
+            filters &= Q(status=status)
+        if department:
+            filters &= Q(doctor__department=department)
+        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").select_related("patient")
         return doctor_leave
 
     @staticmethod
@@ -596,6 +633,13 @@ class DoctorsManagement:
 
     @staticmethod
     def fetch_reset_request(request, data):
+        doctor_name = data.get('doctorName', False)
+        department = data.get('department', False)
+        filters = Q(hospital_id=request.user.hospital)
+        if department:
+            filters &= Q(doctor__department_id=department)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
         return ResetPasswordRequest.objects.filter(doctor__hospital_id=request.user.hospital).select_related("doctor")
 
     @staticmethod
@@ -754,9 +798,26 @@ class DoctorsManagement:
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
-            filters &= Q(doctor__full_name__icontains = patient_name)
+            filters &= Q(doctor__full_name__icontains = doctor_name)
         if hospitals:
             filters &= Q(doctor__hospital=hospitals)
         if department:
             filters &= Q(doctor__department=department)
-        return PatientDoctorReviews.objects.filter().select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")
+        return Patient
+
+    @staticmethod
+    def get_all_hospital_reviews(request, data):
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        hospitals = data.get('hospitalSearch', False)
+        department = data.get('department', False)
+        filters = Q(doctor__hospital_id=request.user.hospital)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        if department:
+            filters &= Q(doctor__department=department)
+        return PatientDoctorReviews.objects.filter(filters).select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")

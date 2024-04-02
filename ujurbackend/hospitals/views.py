@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from admin_hospital.serializer import HospitalAdminsSerailizer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAverageUserSerializer, \
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
@@ -8,8 +9,8 @@ from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAve
     PatientDetailsFprDoctorSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, LabReportsSerializer, \
-    DepartmentSerializer, DepartmentMappingSerializer
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedHospital
+    DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedHospital, IsAuthenticatedAdminPanel
 import jwt
 
 from patients.manager import PatientManager
@@ -79,10 +80,11 @@ class HospitalDoctors(APIView):
     @staticmethod
     def get(request):
         try:
-            data = {}
-            data['hospitalId'] = request.user.hospital
-            hospital_doc_data = HospitalManager.fetch_doctors_hospital(data)
-            hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
+            hospital_id = {}
+            data = request.query_params
+            hospital_id['hospitalId'] = request.user.hospital
+            hospital_doc_data = HospitalManager.fetch_doctors_hospital(data, hospital_id)
+            hospital_serialized_data = DoctorModelForHospitalSerializer(hospital_doc_data, many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -214,7 +216,7 @@ class FetchHospitalDepartments(APIView):
 
 
 class FetchAllDepartments(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def get(request):
@@ -255,7 +257,7 @@ class FetchHospitalReviews(APIView):
 
 
 class FetchPatientsAdmin(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def get(request):
@@ -268,7 +270,7 @@ class FetchPatientsAdmin(APIView):
             return Response({"result" : "failure", "message":str(e)}, 500)
 
 class AddHospitalAdmin(APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def post(request):
@@ -335,7 +337,7 @@ class AddDepartmentsHospitals(APIView):
 
 
 class AddDepartmentsAdmin(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def post(request):
@@ -348,7 +350,7 @@ class AddDepartmentsAdmin(APIView):
 
 
 class fetchAllReviews(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def get(request):
@@ -371,5 +373,72 @@ class HandleDeleteHospital(APIView):
             data = request.data
             admin = HospitalManager.handle_delete_hospital(data)
             return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleDoctors(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            hospital_id = request.user.hospital
+            doctor = HospitalManager.fetch_all_doctors_hospital(hospital_id)
+            hospital_serialized_data = HospitalSerializerWithDoctors(doctor).data
+            return Response({"result" : "success", "data": hospital_serialized_data['hospital_doctors']}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleDepartments(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            department_id = HospitalManager.fetch_hospital_departments(request, data).values_list('department_id', flat=True)
+            departments = HospitalManager.get_departments(department_id)
+            departments_data = DepartmentSerializer(departments, many=True).data
+            return Response({"result" : "success","data": departments_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HospitalDoctorReviews(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            all_reviews = DoctorsManagement.get_all_hospital_reviews(request, data)
+            reviews_serialized_data = DoctorReviewsWithPatientsAndDoctorSerializer(all_reviews, many=True).data
+            return Response({"result" : "success","data": reviews_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HandleHospitalAdmins(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            admin = HospitalManager.fetch_hospital_admin_data(request, data)
+            admin_serialized_data = HospitalAdminsSerailizer(admin,many=True).data
+            return Response({"result" : "success", "data": admin_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = HospitalManager.add_hospital_admin_data(request, data)
+            return Response({"result" : "success", "message": "Hospital Admin added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
