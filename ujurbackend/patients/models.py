@@ -26,8 +26,10 @@ class Patient(models.Model):
     date_of_birth = models.DateField()
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True)
     weight = models.DecimalField(max_digits=5, decimal_places=2, help_text='Weight in kilograms', null=True)
+    height = models.DecimalField(max_digits=5, decimal_places=2, help_text='Weight in Foots', null=True)
     address = models.TextField()
     district = models.CharField(max_length=100)
+    block = models.CharField(max_length=100)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='patient_who_created_created_by')
 

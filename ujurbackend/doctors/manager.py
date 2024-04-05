@@ -390,14 +390,21 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_self_appointment_fetch(request, data):
+        patient_name = data.get("patientName")
         date = data.get("date")
         selected_date = datetime.strptime(date, "%Y-%m-%d")
-        slot = data.get("slot")
-
-        latest_appointment = Appointment.objects.filter(
-            doctor_id=request.user.doctor,
-            date_appointment__date=selected_date,
-            slot=slot
+        slot = data.get("slot", False)
+        status = data.get("status", False)
+        filters = Q()
+        filters &= Q(doctor_id=request.user.doctor)
+        filters &= Q(date_appointment__date=selected_date)
+        if slot:
+            filters &= Q(slot=slot)
+        if status:
+            filters &= Q(status=status)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains=patient_name)
+        latest_appointment = Appointment.objects.filter(filters
         ).select_related("patient").select_related("doctor").exclude(status="created").order_by("-created_at")
 
         return latest_appointment
@@ -422,56 +429,77 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_dashboard_details(request, data):
-        # Assuming the status choices are defined as constants in your model
-        COMPLETED_APPOINTMENTS = 'completed'
-        PENDING_APPOINTMENTS = 'pending'
-        CANCELED_APPOINTMENTS = 'canceled'
+        total = []
+        pending = []
+        canceled = []
+        completed = []
 
-        # Fetching all required statistics in one query
-        appointment_stats = Appointment.objects.filter(
-            doctor_id=request.user.doctor,
-            date_appointment__week=timezone.now().isocalendar()[1]
-        ).values('status').annotate(count=Count('status'))
+        # Define the start and end of the week
+        start_of_week = datetime.now() - timedelta(days=datetime.now().weekday())
+        end_of_week = start_of_week + timedelta(days=6)
 
-        # Initializing variables with default values
-        total_appointments = 0
-        pending_appointments = 0
-        canceled_appointments = 0
+        # Iterate over each day of the week
+        current_date = start_of_week
+        while current_date <= end_of_week:
+            # Query appointments for the current day and count statuses
+            total_count = Appointment.objects.filter(
+                doctor_id=request.user.doctor,
+                date_appointment=current_date.date(),
+            ).count()
+            pending_count = Appointment.objects.filter(
+                doctor_id=request.user.doctor,
+                date_appointment=current_date.date(),
+                status='pending'
+            ).count()
+            canceled_count = Appointment.objects.filter(
+                doctor_id=request.user.doctor,
+                date_appointment=current_date.date(),
+                status='canceled'
+            ).count()
+            completed_count = Appointment.objects.filter(
+                doctor_id=request.user.doctor,
+                date_appointment=current_date.date(),
+                status='completed'
+            ).count()
 
-        # Extracting counts from the result
-        for stat in appointment_stats:
-            if stat['status'] == COMPLETED_APPOINTMENTS:
-                total_appointments = stat['count']
-            elif stat['status'] == PENDING_APPOINTMENTS:
-                pending_appointments = stat['count']
-            elif stat['status'] == CANCELED_APPOINTMENTS:
-                canceled_appointments = stat['count']
+            total.append(total_count)
+            pending.append(pending_count)
+            canceled.append(canceled_count)
+            completed.append(completed_count)
+            current_date += timedelta(days=1)
 
-        all_appointments = total_appointments + pending_appointments + canceled_appointments
+        return {
+            "total": total,
+            "pending": pending,
+            "canceled": canceled,
+            "completed": completed,
+        }
+
+    @staticmethod
+    def doctor_patients_appointments(request, data):
+        date = data.get('date', False)
+        filters = Q(doctor_id=request.user.doctor)
+        if not date:
+            raise Exception("Not Date Provided")
+        filters &= Q(date_appointment__date = date)
+        total_appointments = Appointment.objects.filter(
+            filters
+        ).select_related("patient").order_by("-created_at")
+        pending_appointments = Appointment.objects.filter(
+            filters & Q(status="pending")
+        ).select_related("patient").order_by("date_appointment")
+        canceled_appointments = Appointment.objects.filter(
+            filters & Q(status="canceled")
+        ).select_related("patient").order_by("date_appointment")
+        completed_appointments = Appointment.objects.filter(
+            filters & Q(status="completed")
+        ).select_related("patient").order_by("date_appointment")
 
         return {
             'total_appointments': total_appointments,
             'pending_appointments': pending_appointments,
             'canceled_appointments': canceled_appointments,
-            'all_appointments': all_appointments,
-        }
-
-
-    @staticmethod
-    def doctor_patients_appointments(request, data):
-        latest_appointments = Appointment.objects.filter(
-            doctor_id=request.user.doctor
-        ).select_related("patient").order_by("-created_at")[:5]
-
-        # Get the 5 upcoming appointments
-        upcoming_appointments = Appointment.objects.filter(
-            doctor_id=request.user.doctor,
-            date_appointment__gte=timezone.now()
-        ).select_related("patient").order_by("date_appointment")[:5]
-
-        return {
-            'latest_appointments': latest_appointments,
-            'upcoming_appointments': upcoming_appointments,
+            'completed_appointments': completed_appointments,
         }
 
     @staticmethod
@@ -511,7 +539,11 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_fetch_patients(request, data):
-        appointments_with_specific_doctor = Appointment.objects.filter(doctor_id=request.user.doctor)
+        patient_name = data.get("patientName")
+        filters = Q(doctor_id = request.user.doctor)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        appointments_with_specific_doctor = Appointment.objects.filter(filters)
         patients_with_appointments = appointments_with_specific_doctor.values_list('patient', flat=True).distinct()
         patients = Patient.objects.filter(id__in=patients_with_appointments).select_related("user")
         return patients
@@ -595,7 +627,7 @@ class DoctorsManagement:
     def fetch_patient_profile(request, data):
         patientId = data.get("patientId", False)
         if patientId:
-            prefetch_value = Prefetch("patient_appointments", Appointment.objects.order_by("-date_appointment"), to_attr="appointments")
+            prefetch_value = Prefetch("patient_appointments", Appointment.objects.order_by("-date_appointment").order_by("-created_at"), to_attr="appointments")
             patient_obj = Patient.objects.filter(
                 id=patientId).prefetch_related(prefetch_value)
             return patient_obj
@@ -821,3 +853,22 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         return PatientDoctorReviews.objects.filter(filters).select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")
+
+
+    @staticmethod
+    def change_doctor_profile(request, data):
+        profile_picture = data.get("profilePhoto", False)
+        sign_picture = data.get("signPhoto", False)
+        if profile_picture or sign_picture:
+            doctor_obj = doctorDetails.objects.get(id=request.user.doctor)
+            if profile_picture:
+                doctor_obj.profile_picture = profile_picture
+            if sign_picture:
+                doctor_obj.signature = sign_picture
+            doctor_obj.save()
+        else:
+            raise Exception("One photo should be uploaded")
+
+    @staticmethod
+    def fetch_token_refersh(request, data):
+        return doctorDetails.objects.get(id=request.user.doctor)

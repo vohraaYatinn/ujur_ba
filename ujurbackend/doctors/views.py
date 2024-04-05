@@ -214,13 +214,21 @@ class dashboardPatientsDetails(APIView):
         try:
             data = request.query_params
             appointments_data = DoctorsManagement.doctor_patients_appointments(request, data)
-            latest_appointment = AppointmentWithDepartmentSerializer(appointments_data['latest_appointments'], many=True).data
-            upcoming_appointment = AppointmentWithDepartmentSerializer(appointments_data['upcoming_appointments'], many=True).data
+            total_appointment = AppointmentWithDepartmentSerializer(appointments_data['total_appointments'][:5], many=True).data
+            pending_appointment = AppointmentWithDepartmentSerializer(appointments_data['pending_appointments'][:5], many=True).data
+            canceled_appointment = AppointmentWithDepartmentSerializer(appointments_data['canceled_appointments'][:5], many=True).data
+            completed_appointment = AppointmentWithDepartmentSerializer(appointments_data['completed_appointments'][:5], many=True).data
 
             return Response(
                 {"result": "success", "data": {
-                    'latest_appointments': latest_appointment,
-                    'upcoming_appointments': upcoming_appointment,
+                    'total_appointments': total_appointment,
+                    'pending_appointments': pending_appointment,
+                    'canceled_appointments': canceled_appointment,
+                    'completed_appointments': completed_appointment,
+                    'total_appointments_count': len(appointments_data['total_appointments']),
+                    'pending_appointments_count': len(appointments_data['pending_appointments']),
+                    'canceled_appointments_count': len(appointments_data['canceled_appointments']),
+                    'completed_appointments_count': len(appointments_data['completed_appointments']),
                 }}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -336,7 +344,7 @@ class changeDoctorProfile(APIView):
             doctor_obj = DoctorsManagement.doctor_change_profile(request, data)
 
             return Response(
-                {"result": "success", "message": "Your Password has been changed Successfully"}, 200)
+                {"result": "success", "message": "Your Profile has been updated Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -421,5 +429,41 @@ class ApplyForgotPasswordRequest(APIView):
             DoctorsManagement.reset_password_request_apply(request, data)
             return Response(
                 {"result": "success", "message": "Doctor Prescription Has Been Saved Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class handleDoctorImages(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            DoctorsManagement.change_doctor_profile(request, data)
+            return Response(
+                {"result": "success", "message": "Doctor Images Has Been Saved Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class handleDoctorTokenOnRefersh(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            login_doctor = DoctorsManagement.fetch_token_refersh(request, data)
+            if login_doctor:
+                payload = {
+                    'email': login_doctor.email,
+                    'doctor': login_doctor.id
+                }
+                token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
+                doctor_serializer = DoctorModelSerializer(login_doctor).data
+                return Response({"result": "success", "message": "Doctor login successfully", "token": token, "doctor":doctor_serializer}, 200)
+            else:
+                return Response({"result": "failure", "message": "Please Check the Username or Password", "token": False}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
