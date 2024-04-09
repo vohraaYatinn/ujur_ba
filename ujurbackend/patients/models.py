@@ -20,8 +20,10 @@ class Patient(models.Model):
         ('O+', 'O+'),
         ('O-', 'O-'),
     ]
-    user = models.ForeignKey(UsersDetails, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='patient/', blank=True, null=True)
+    ujur_id = models.CharField(max_length=200, null=True)
     full_name = models.CharField(max_length=200, null=True)
+    user = models.ForeignKey(UsersDetails, on_delete=models.CASCADE)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     date_of_birth = models.DateField()
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True)

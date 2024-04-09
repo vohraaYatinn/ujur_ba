@@ -405,7 +405,7 @@ class DoctorsManagement:
         if patient_name:
             filters &= Q(patient__full_name__icontains=patient_name)
         latest_appointment = Appointment.objects.filter(filters
-        ).select_related("patient").select_related("doctor").exclude(status="created").order_by("-created_at")
+        ).select_related("patient").select_related("doctor").exclude(status="created").order_by("id")
 
         return latest_appointment
 
@@ -775,11 +775,10 @@ class DoctorsManagement:
     @staticmethod
     def reset_password_request_apply(request, data):
         email_to_reset = data.get("email")
-        comment = data.get("comment")
         if email_to_reset:
             doctor = doctorDetails.objects.filter(email=email_to_reset)
             if doctor:
-                ResetPasswordRequest.objects.create(doctor=doctor[0], comment=comment)
+                ResetPasswordRequest.objects.create(doctor=doctor[0])
         else:
             raise Exception("You are missing something")
 
