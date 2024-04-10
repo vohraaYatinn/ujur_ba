@@ -427,40 +427,40 @@ class DoctorsManagement:
 
         return latest_appointment
 
+    from datetime import datetime, timedelta
+    from django.db.models import Count
+    from django.utils import timezone
     @staticmethod
     def doctor_dashboard_details(request, data):
         total = []
         pending = []
         canceled = []
         completed = []
+        period = data.get("time", "Week")
 
-        # Define the start and end of the week
-        start_of_week = datetime.now() - timedelta(days=datetime.now().weekday())
-        end_of_week = start_of_week + timedelta(days=6)
+        if period == 'Week':
+            start_of_period = datetime.now() - timedelta(days=datetime.now().weekday())
+            end_of_period = start_of_period + timedelta(days=6)
+        elif period == 'Month':
+            today = datetime.now().date()
+            start_of_period = datetime(today.year, today.month, 1)
+            end_of_period = datetime(today.year, today.month + 1, 1) - timedelta(days=1)
+        elif period == 'Year':
+            today = datetime.now().date()
+            start_of_period = datetime(today.year, 1, 1)
+            end_of_period = datetime(today.year, 12, 31)
 
-        # Iterate over each day of the week
-        current_date = start_of_week
-        while current_date <= end_of_week:
-            # Query appointments for the current day and count statuses
-            total_count = Appointment.objects.filter(
+        current_date = start_of_period
+        while current_date <= end_of_period:
+            appointments = Appointment.objects.filter(
                 doctor_id=request.user.doctor,
                 date_appointment=current_date.date(),
-            ).count()
-            pending_count = Appointment.objects.filter(
-                doctor_id=request.user.doctor,
-                date_appointment=current_date.date(),
-                status='pending'
-            ).count()
-            canceled_count = Appointment.objects.filter(
-                doctor_id=request.user.doctor,
-                date_appointment=current_date.date(),
-                status='canceled'
-            ).count()
-            completed_count = Appointment.objects.filter(
-                doctor_id=request.user.doctor,
-                date_appointment=current_date.date(),
-                status='completed'
-            ).count()
+            ).values('status').annotate(count=Count('status'))
+
+            total_count = sum(appt['count'] for appt in appointments)
+            pending_count = sum(appt['count'] for appt in appointments if appt['status'] == 'pending')
+            canceled_count = sum(appt['count'] for appt in appointments if appt['status'] == 'canceled')
+            completed_count = sum(appt['count'] for appt in appointments if appt['status'] == 'completed')
 
             total.append(total_count)
             pending.append(pending_count)

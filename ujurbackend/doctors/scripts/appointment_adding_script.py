@@ -9,8 +9,8 @@ from doctors.models import Appointment
 import datetime
 import random
 
-date = datetime.date.today()
-for i in range(20):
+date = datetime.date.today() - datetime.timedelta(days=100)
+for i in range(7):
     check_status = ['completed', "canceled", "pending"]
     random.shuffle(check_status)
     Appointment.objects.create(
@@ -23,7 +23,7 @@ for i in range(20):
         patients_query="I am in pain"
 
     )
-for i in range(20):
+for i in range(9):
     check_status = ['completed', "canceled", "pending"]
     random.shuffle(check_status)
     Appointment.objects.create(
@@ -36,7 +36,7 @@ for i in range(20):
         patients_query="I am in pain"
 
     )
-for i in range(20):
+for i in range(5):
     check_status = ['completed', "canceled", "pending"]
     random.shuffle(check_status)
     Appointment.objects.create(
