@@ -347,7 +347,7 @@ class DoctorsManagement:
     def login_doctor(request, data):
         email = data.get("email")
         password = data.get("password")
-        check_doctor = doctorDetails.objects.filter(email=email, password=password)
+        check_doctor = doctorDetails.objects.filter(email=email, password=password).select_related("hospital")
         if check_doctor.exists():
             return check_doctor[0]
         return False
@@ -870,4 +870,4 @@ class DoctorsManagement:
 
     @staticmethod
     def fetch_token_refersh(request, data):
-        return doctorDetails.objects.get(id=request.user.doctor)
+        return doctorDetails.objects.select_related("hospital").get(id=request.user.doctor)
