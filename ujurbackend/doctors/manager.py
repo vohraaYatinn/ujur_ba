@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 
-from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping
+from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName
 from patients.models import Patient
 from users.models import UsersDetails
 
@@ -437,6 +437,30 @@ class DoctorsManagement:
         canceled = []
         completed = []
         period = data.get("time", "Week")
+        time_period_dict = {}
+        weekday_aliases = {
+            0: "mon",
+            1: "tue",
+            2: "wed",
+            3: "thu",
+            4: "fri",
+            5: "sat",
+            6: "sun"
+        }
+        month_aliases = {
+            1: "jan",
+            2: "feb",
+            3: "mar",
+            4: "apr",
+            5: "may",
+            6: "jun",
+            7: "jul",
+            8: "aug",
+            9: "sep",
+            10: "oct",
+            11: "nov",
+            12: "dec"
+        }
 
         if period == 'Week':
             start_of_period = datetime.now() - timedelta(days=datetime.now().weekday())
@@ -451,7 +475,9 @@ class DoctorsManagement:
             end_of_period = datetime(today.year, 12, 31)
 
         current_date = start_of_period
+        index = 0
         while current_date <= end_of_period:
+            index += 1
             appointments = Appointment.objects.filter(
                 doctor_id=request.user.doctor,
                 date_appointment=current_date.date(),
@@ -466,6 +492,13 @@ class DoctorsManagement:
             pending.append(pending_count)
             canceled.append(canceled_count)
             completed.append(completed_count)
+            if period == 'Week':
+                time_period_dict[index] = weekday_aliases[current_date.weekday()]
+            if period == 'Month':
+                time_period_dict[index] = str(current_date.date())
+            if period == 'Year':
+                time_period_dict[index] = month_aliases[current_date.month]
+
             current_date += timedelta(days=1)
 
         return {
@@ -473,7 +506,7 @@ class DoctorsManagement:
             "pending": pending,
             "canceled": canceled,
             "completed": completed,
-        }
+        }, time_period_dict
 
     @staticmethod
     def doctor_patients_appointments(request, data):
@@ -551,8 +584,12 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_fetch_reviews(request, data):
+        filters = Q(doctor_id=request.user.doctor)
+        patient_name = data.get("patientName")
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
         reviews_objs = PatientDoctorReviews.objects.filter(
-            doctor_id=request.user.doctor).select_related("patient")
+            filters).select_related("patient")
         # Initialize counts for each star rating
         star_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
         total_sum = 0
@@ -871,3 +908,21 @@ class DoctorsManagement:
     @staticmethod
     def fetch_token_refersh(request, data):
         return doctorDetails.objects.select_related("hospital").get(id=request.user.doctor)
+
+
+    @staticmethod
+    def fetch_medicines_doctor(request, data):
+        doctor_details = doctorDetails.objects.get(id=request.user.doctor)
+        return MedicinesName.objects.filter(hospital=doctor_details.hospital)
+
+    @staticmethod
+    def add_medicines_doctor(request, data):
+        doctor_details = doctorDetails.objects.get(id=request.user.doctor)
+        medicines_name = data.get("name")
+        medicines_description = data.get("description")
+        if medicines_name and medicines_description:
+            return MedicinesName.objects.create(
+                hospital=doctor_details.hospital,
+                name = medicines_name,
+                description = medicines_description
+            )

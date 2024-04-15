@@ -63,3 +63,13 @@ class LabReports(models.Model):
     class Meta:
         managed = True
         db_table = "lab_reports_hospital"
+
+
+class MedicinesName(models.Model):
+    hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        managed = True
+        db_table = "medicines_name"

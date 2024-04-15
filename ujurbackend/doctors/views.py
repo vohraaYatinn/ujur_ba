@@ -7,7 +7,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     DoctorSlotsSerializer, AppointmentSerializer, AppointmentWithDepartmentSerializer, DoctorFavSerializer, \
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
-    AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer
+    AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -199,9 +199,9 @@ class dashboardDetails(APIView):
     def get(request):
         try:
             data = request.query_params
-            dashboard_counts = DoctorsManagement.doctor_dashboard_details(request, data)
+            dashboard_counts, time_period_dict = DoctorsManagement.doctor_dashboard_details(request, data)
             return Response(
-                {"result": "success", "data": dashboard_counts}, 200)
+                {"result": "success", "data": dashboard_counts, "time_period_dict":time_period_dict}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -465,5 +465,28 @@ class handleDoctorTokenOnRefersh(APIView):
                 return Response({"result": "success", "message": "Doctor login successfully", "token": token, "doctor":doctor_serializer}, 200)
             else:
                 return Response({"result": "failure", "message": "Please Check the Username or Password", "token": False}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class handleDoctorMedicines(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            login_doctor = DoctorsManagement.fetch_medicines_doctor(request, data)
+            medicine_data = MedicinesSerializer(login_doctor, many=True).data
+            return Response({ "result": "success", "data": medicine_data }, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            DoctorsManagement.add_medicines_doctor(request, data)
+            return Response({"result": "success", "message": "Doctor login successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

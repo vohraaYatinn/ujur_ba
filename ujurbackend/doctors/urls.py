@@ -4,7 +4,7 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     fetchAppointmentDetailsPatient, doctorLogin, doctorFetchAppointments, FetchPatientsOfDoctor, fetchDoctorReviews, \
     fetchDoctorOwnProfile, doctorChangePassword, dashboardDetails, dashboardPatientsDetails, dashboarDoctorReviews, \
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
-    ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh
+    ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -40,8 +40,8 @@ urlpatterns = [
     path(r'forgot-password-request/', ApplyForgotPasswordRequest.as_view(), name="forgot-password-request"),
     path(r'handle-doctor-iamges/', handleDoctorImages.as_view(), name="handle-doctor-iamges"),
     path(r'get-data-from-token/', handleDoctorTokenOnRefersh.as_view(), name="get-data-from-token"),
-
-
+    path(r'handle-medicines-doctor/', handleDoctorMedicines.as_view(), name="handle-medicines-doctor"),
+    path(r'add-medicines-doctor/', handleDoctorMedicines.as_view(), name="add-medicines-doctor"),
 
 
 ]
