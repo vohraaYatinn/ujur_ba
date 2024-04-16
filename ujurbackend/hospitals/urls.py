@@ -4,7 +4,7 @@ from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabR
     HospitalDoctors, HospitalDoctorsProfile, HospitalAddDoctors, HandlePasswordRequest, FetchDoctorLeaveRequests, \
     FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
     FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital, HandleDoctors, \
-    HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins
+    HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins, handleHospitalMedicines, handleReferToMedicines
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -34,5 +34,8 @@ urlpatterns = [
     path(r'all-doctors-hospital-reviews/', HospitalDoctorReviews.as_view(), name="all-doctors-hospital-reviews"),
     path(r'fetch-hospital-admin/', HandleHospitalAdmins.as_view(), name="fetch-hospital-admin"),
     path(r'add-hospital-admin-user/', HandleHospitalAdmins.as_view(), name="add-hospital-admin-user"),
-
+    path(r'handle-medicines-hospital/', handleHospitalMedicines.as_view(), name="handle-medicines-hospital"),
+    path(r'add-medicines-hospital/', handleHospitalMedicines.as_view(), name="add-medicines-hospital"),
+    path(r'handle-hospital-refer-to/', handleReferToMedicines.as_view(), name="handle-hospital-refer-to"),
+    path(r'add-hospital-refer-to/', handleReferToMedicines.as_view(), name="add-hospital-refer-to"),
 ]

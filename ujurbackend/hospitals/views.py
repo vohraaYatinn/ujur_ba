@@ -6,7 +6,7 @@ from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAverageUserSerializer, \
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
     AppointmentWithDepartmentandDoctorSerializer, DoctorReviewsSerializer, DoctorReviewsWithPatientsAndDoctorSerializer, \
-    PatientDetailsFprDoctorSerializer
+    PatientDetailsFprDoctorSerializer, MedicinesSerializer, ReferToSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, LabReportsSerializer, \
     DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer
@@ -440,5 +440,53 @@ class HandleHospitalAdmins(APIView):
             data = request.data
             admin = HospitalManager.add_hospital_admin_data(request, data)
             return Response({"result" : "success", "message": "Hospital Admin added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class handleHospitalMedicines(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            medicine_data = HospitalManager.fetch_medicines_hospital(request, data)
+            medicine_data_serialized = MedicinesSerializer(medicine_data, many=True).data
+            return Response({ "result": "success", "data": medicine_data_serialized }, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.add_medicines_hospital(request, data)
+            return Response({"result": "success", "message": "Medicine Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class handleReferToMedicines(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            refer_data = HospitalManager.fetch_refer_to_hospital(request, data)
+            refer_data_serialized = ReferToSerializer(refer_data, many=True).data
+            return Response({ "result": "success", "data": refer_data_serialized }, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.add_refer_to_hospital(request, data)
+            return Response({"result": "success", "message": "Medicine Added Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

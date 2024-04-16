@@ -73,3 +73,12 @@ class MedicinesName(models.Model):
     class Meta:
         managed = True
         db_table = "medicines_name"
+
+
+class ReferToDoctors(models.Model):
+    hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        managed = True
+        db_table = "refer_to"

@@ -1,7 +1,8 @@
 from django.db.models import Q
 
 from doctors.models import doctorDetails
-from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department
+from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
+    MedicinesName, ReferToDoctors
 
 
 class HospitalManager:
@@ -141,3 +142,30 @@ class HospitalManager:
             hospital_id=hospital
         )
 
+    @staticmethod
+    def fetch_medicines_hospital(request, data):
+        return MedicinesName.objects.filter(hospital=request.user.hospital)
+
+    @staticmethod
+    def add_medicines_hospital(request, data):
+        medicines_name = data.get("name")
+        medicines_description = data.get("description")
+        if medicines_name and medicines_description:
+            return MedicinesName.objects.create(
+                hospital_id=request.user.hospital,
+                name = medicines_name,
+                description = medicines_description
+            )
+    @staticmethod
+    def fetch_refer_to_hospital(request, data):
+        return ReferToDoctors.objects.filter(hospital=request.user.hospital)
+
+    @staticmethod
+    def add_refer_to_hospital(request, data):
+        doctor_name = data.get("doctorName")
+        hospital_name = data.get("hospitalName")
+        if doctor_name and hospital_name:
+            return ReferToDoctors.objects.create(
+                hospital_id=request.user.hospital,
+                name = doctor_name + " - " + hospital_name
+            )
