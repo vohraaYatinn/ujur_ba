@@ -91,7 +91,7 @@ class HospitalDoctors(APIView):
 
 
 class HospitalDoctorsProfile(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = []
     @staticmethod
     def get(request):
         try:
