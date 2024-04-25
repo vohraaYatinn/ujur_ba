@@ -68,7 +68,6 @@ ROOT_URLCONF = 'ujurbackend.urls'
 CORS_ALLOWED_ORIGINS = [
     'https://91.108.110.30',
         'http://91.108.110.30',
-        "http://localhost"
 
     'http://localhost:3000',
 
@@ -77,6 +76,8 @@ CORS_ALLOWED_ORIGINS = [
 'http://91.108.110.87:3000',
 'http://91.108.110.87:3001',
 'http://91.108.110.87:3002',
+        "http://localhost",
+
 "http://91.108.110.30:3000",
 "http://192.168.29.217:3000"
 ]
