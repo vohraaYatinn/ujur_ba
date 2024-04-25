@@ -66,7 +66,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ujurbackend.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    'https://91.108.110.30'
+    'https://91.108.110.30',
         'http://91.108.110.30',
         "http://localhost"
 
