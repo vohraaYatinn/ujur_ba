@@ -66,7 +66,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ujurbackend.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    '91.108.110.30'
     'https://91.108.110.30'
         'http://91.108.110.30',
         "http://localhost"
@@ -158,12 +157,19 @@ CSRF_TRUSTED_ORIGINS = [   " http://localhost", 'http://localhost:3000', 'http:/
 "http://192.168.29.217:3000"
 
 ]
-CORS_ORIGIN_WHITELIST = [" http://localhost", "http://127.0.0.1", "http://localhost",'http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
+CORS_ORIGIN_WHITELIST = [   " http://localhost", 'http://localhost:3000', 'http://localhost:3001', "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
 'http://91.108.110.87:3001',
 'http://91.108.110.87:3002',
 "http://91.108.110.30:3000",
-                         "http://192.168.29.217:3000"
+"http://192.168.29.217:3000"
+
 ]
+# CORS_ORIGIN_WHITELIST = [" http://localhost", "http://127.0.0.1", "http://localhost",'http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
+# 'http://91.108.110.87:3001',
+# 'http://91.108.110.87:3002',
+# "http://91.108.110.30:3000",
+#                          "http://192.168.29.217:3000"
+# ]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
