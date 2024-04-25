@@ -26,9 +26,11 @@ SECRET_KEY = 'django-insecure-%&fe-lx@nx@r=kpipq0w!tficd_fk6dl@6x#oa*8%92ts0@vq+
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "*"
+    '0.0.0.0',
+    '10.123.0.63'
 ]
-
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 jwt_secret_key = 'secretKeyRight34'
@@ -71,7 +73,8 @@ CORS_ALLOWED_ORIGINS = [
 'http://91.108.110.87:3000',
 'http://91.108.110.87:3001',
 'http://91.108.110.87:3002',
-"http://91.108.110.30:3000"
+"http://91.108.110.30:3000",
+"http://192.168.29.217:3000"
 ]
 
 
@@ -146,13 +149,15 @@ USE_TZ = True
 CSRF_TRUSTED_ORIGINS = [    'http://localhost:3000', 'http://localhost:3001', "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
 'http://91.108.110.87:3001',
 'http://91.108.110.87:3002',
-"http://91.108.110.30:3000"
+"http://91.108.110.30:3000",
+"http://192.168.29.217:3000"
 
 ]
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
+CORS_ORIGIN_WHITELIST = ["http://127.0.0.1", "http://localhost",'http://localhost:3000', 'http://localhost:3001' ,  "http://127.0.0.1:3000", 'http://91.108.110.87:3000',
 'http://91.108.110.87:3001',
 'http://91.108.110.87:3002',
-"http://91.108.110.30:3000"
+"http://91.108.110.30:3000",
+                         "http://192.168.29.217:3000"
 ]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
