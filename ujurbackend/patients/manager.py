@@ -37,7 +37,16 @@ class PatientManager:
         try:
             patient_id = request.user.id
             if patient_id:
-                return Patient.objects.filter(id=patient_id).select_related('user')[0]
+                required_patient = Patient.objects.filter(id=patient_id).select_related('user')[0]
+                if required_patient.created_by:
+                    extra_patients = Patient.objects.filter(created_by=required_patient.created_by).exclude(
+                        id=required_patient.id)
+                    extra_patients = extra_patients.union(Patient.objects.filter(id=required_patient.created_by_id))
+
+
+                else:
+                    extra_patients = Patient.objects.filter(created_by=patient_id)
+                return required_patient, extra_patients
         except Exception as e:
             pass
 

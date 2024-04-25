@@ -7,6 +7,7 @@ from django.db.models.functions import Round
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
+from django.db.models import F
 
 from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName
 from patients.models import Patient
@@ -244,14 +245,35 @@ class DoctorsManagement:
         bio = data.get("bio")
 
         if patient_id and doctor_id and date and slot:
-            appointment = Appointment.objects.create(
-                patient_id=patient_id,
-                doctor_id=doctor_id,
-                slot=slot,
-                date_appointment=date,
-                patients_query=comment
-            )
-            return appointment.id
+            latest_appointment_slot = Appointment.objects.filter(
+                    date_appointment__date=date,
+                    slot=slot
+                    )
+            latest_appointment = latest_appointment_slot.order_by('-created_at').first()
+            if latest_appointment:
+                latest_slot = latest_appointment.appointment_slot
+            else:
+                latest_slot = 0
+            doctor_slots = doctorSlots.objects.get(doctor__id=doctor_id)
+            if slot == "morning":
+                slot_number = doctor_slots.morning_slots
+            elif slot == "afternoon":
+                slot_number = doctor_slots.afternoon_slots
+            elif slot == "evening":
+                slot_number = doctor_slots.evening_slots
+            if int(latest_slot)+1 <= int(slot_number):
+                appointment = Appointment.objects.create(
+                    patient_id=patient_id,
+                    doctor_id=doctor_id,
+                    appointment_slot=int(latest_slot)+1,
+                    slot=slot,
+                    date_appointment=date,
+                    patients_query=comment
+                )
+
+                return appointment.id
+            else:
+                raise Exception("It Looks like slots for this has already been fulled")
         else:
             raise Exception("It Looks like you have missed something, Please try again")
 
@@ -301,7 +323,7 @@ class DoctorsManagement:
         if patient_id:
             latest_appointment = Appointment.objects.filter(
                 patient_id=patient_id
-            ).select_related("doctor").order_by("-created_at")
+            ).select_related("doctor").exclude(status="created").order_by("-created_at")
             if latest_appointment:
                 return latest_appointment[0]
             else:
@@ -334,9 +356,13 @@ class DoctorsManagement:
             latest_appointment = Appointment.objects.filter(
                 id=appointment_id
             ).select_related("doctor").select_related("patient").order_by("-created_at")
+            slot = latest_appointment[0].slot
+            date = latest_appointment[0].date_appointment
+
             if latest_appointment:
                 slots = doctorSlots.objects.get(doctor=latest_appointment[0].doctor)
-                return latest_appointment[0], slots
+                return latest_appointment[0], slots, Appointment.objects.filter(date_appointment=date, slot=slot
+                           ).count()
             else:
                 return []
         else:

@@ -57,6 +57,7 @@ class doctorSlots(models.Model):
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='patient_appointments')
     doctor = models.ForeignKey(doctorDetails, on_delete=models.CASCADE, related_name='doctor')
+    appointment_slot = models.CharField(max_length=100, null=True)
     slot = models.CharField(max_length=100)
     date_appointment = models.DateTimeField()
     status = models.CharField(max_length=100, default="created")

@@ -148,10 +148,10 @@ class fetchAppointmentDetails(APIView):
     def get(request):
         try:
             data = request.query_params
-            latest_appointment, slot = DoctorsManagement.fetch_appointment_details_per_appointment(data)
+            latest_appointment, slot, count = DoctorsManagement.fetch_appointment_details_per_appointment(data)
             latest_appointment_data = AppointmentWithDoctorAndPatientSerializer(latest_appointment).data
             slot_data = DoctorSlotsSerializer(slot).data
-            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data}, 200)
+            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data, "count":count}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

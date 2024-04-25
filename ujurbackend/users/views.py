@@ -27,7 +27,7 @@ class PhoneOtpVerify(APIView):
             token = False
             if user_exist == "user exists":
                 phone_number = data.get('phoneNumber', False)
-                patient = Patient.objects.get(user__phone = phone_number)
+                patient = Patient.objects.get(user__phone = phone_number,created_by=None)
                 payload = {
                     'phone_number': phone_number,
                     'patient': patient.id

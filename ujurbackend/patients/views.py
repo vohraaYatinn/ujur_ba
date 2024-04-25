@@ -24,6 +24,26 @@ class patientSignup(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
+class changeJwt(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            patientId = request.data.get("patientId")
+            token = request.headers.get("jwtToken")
+            decoded_token = jwt.decode(token, "secretKeyRight34", algorithms=['HS256'])
+
+            if token and patientId:
+                payload = {
+                    'phone_number': decoded_token.get("phone_number"),
+                    'patient': patientId
+                }
+                token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
+            return Response({"result" : "success", "message": "Your profile has been made successfully", "token":token}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
 
 class BookAppointmentPatient(APIView):
     @staticmethod
@@ -55,9 +75,10 @@ class fetchPatientPersonalDetails(APIView):
     def get(request):
         try:
             data = request.query_params
-            personal_patient = PatientManager.get_patient_profile(request, data)
+            personal_patient, all_linked_patient = PatientManager.get_patient_profile(request, data)
             personal_data = PatientDetailsSerializer(personal_patient).data
-            return Response({"result" : "success", "data": personal_data}, 200)
+            all_linked_patient_data = PatientDetailsSerializer(all_linked_patient, many=True).data
+            return Response({"result" : "success", "data": personal_data, "linked_patient": all_linked_patient_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
