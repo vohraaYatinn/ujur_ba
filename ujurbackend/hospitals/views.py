@@ -64,10 +64,10 @@ class HospitalAdminLogin(APIView):
                 payload = {
                     'email': hospital_login.username,
                     'admin': hospital_login.id,
-                    'hospital': hospital_login.hospital.id
+                    'hospital': hospital_login.hospital.id,
                 }
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
-                return Response({"result": "success", "message": "Doctor login successfully", "token": token}, 200)
+                return Response({"result": "success", "message": "Doctor login successfully", "token": token,"hospital":hospital_login.hospital.logo.url}, 200)
             else:
                 return Response(
                     {"result": "failure", "message": "Please Check the Username or Password", "token": False}, 200)
@@ -114,6 +114,19 @@ class HospitalAddDoctors(APIView):
             doctor_obj = DoctorsManagement.add_new_doctor_hospital(request, data)
             return Response(
                 {"result": "success", "message": "New Doctor added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class HospitalEditDoctors(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            doctor_obj = DoctorsManagement.edit_doctor_hospital(request, data)
+            return Response(
+                {"result": "success", "message": "Doctor edited successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -488,5 +501,30 @@ class handleReferToMedicines(APIView):
             data = request.data
             HospitalManager.add_refer_to_hospital(request, data)
             return Response({"result": "success", "message": "Medicine Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class cancelAppointments(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            HospitalManager.delete_hospital_admin(request, data)
+            return Response({"result": "success", "message": "Appointment Deleted Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class deleteHospitalAdmin(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.delete_hospital_admin(request, data)
+            return Response({"result": "success", "message": "Admin Deleted Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

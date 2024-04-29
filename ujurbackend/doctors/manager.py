@@ -185,7 +185,7 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids)
+        unique_patients = Patient.objects.filter(id__in=patient_ids).order_by("-created_at")
         return unique_patients
 
 
@@ -414,7 +414,7 @@ class DoctorsManagement:
             filters &= Q(status=status)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").select_related("patient")
+        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").select_related("patient").order_by("-created_at")
         return doctor_leave
 
     @staticmethod
@@ -835,6 +835,77 @@ class DoctorsManagement:
                 evening_slots_price=eveningPrice,
 
             )
+
+        return doctor_obj
+
+    @staticmethod
+    def edit_doctor_hospital(request, data):
+        hospital_id = request.user.hospital
+        hospital_admin_id = data.get("HospitalsId", False)
+        if hospital_admin_id:
+            hospital_id = hospital_admin_id
+        doctor_id = data.get("doctor_id", None)
+        full_name = data.get("fullName", None)
+        email = data.get("email", None)
+        department = data.get("department", None)
+        education = data.get("education", None)
+        address = data.get("address", None)
+        experience = data.get("experience", None)
+        specialization = data.get("specialization", None)
+        profilePhoto = data.get("profilePhoto", None)
+        bio = data.get("bio", None)
+        morningPrice = data.get("morningPrice", None)
+        afternoonPrice = data.get("afternoonPrice", None)
+        eveningPrice = data.get("eveningPrice", None)
+        morningSlots = data.get("morningSlots", None)
+        afternoonSlots = data.get("afternoonSlots", None)
+        eveningSlots = data.get("eveningSlots", None)
+        morningTime = data.get("morningTime", None)
+        eveningTime = data.get("eveningTime", None)
+        afternoonTime = data.get("afternoonTime", None)
+        if doctor_id:
+            doctor_obj = doctorDetails.objects.get(id=doctor_id)
+            if email:
+                doctor_obj.email = email
+            if full_name:
+                doctor_obj.full_name = full_name
+            if bio:
+                doctor_obj.bio =bio
+            if department:
+                doctor_obj.department_id = department
+            if education:
+                doctor_obj.education = education
+            if address:
+                doctor_obj.address = address
+            if experience:
+                doctor_obj.experience = experience
+            if profilePhoto:
+                doctor_obj.profile_picture = profilePhoto
+            if hospital_id:
+                doctor_obj.hospital_id = hospital_id
+            if specialization:
+                doctor_obj.specialization = specialization
+            doctor_obj.save()
+            doctor_slots = doctorSlots.objects.get(doctor_id=doctor_id)
+            if morningTime:
+                doctor_slots.morning_timings = morningTime
+            if afternoonTime:
+                doctor_slots.afternoon_timings = afternoonTime
+            if eveningTime:
+                doctor_slots.evening_timings = eveningTime
+            if morningSlots:
+                doctor_slots.morning_slots = morningSlots
+            if afternoonSlots:
+                doctor_slots.afternoon_slots = afternoonSlots
+            if eveningSlots:
+                doctor_slots.evening_slots = eveningSlots
+            if morningPrice:
+                doctor_slots.morning_slots_price = morningPrice
+            if afternoonPrice:
+                doctor_slots.afternoon_slots_price = afternoonPrice
+            if eveningPrice:
+                doctor_slots.evening_slots_price = eveningPrice
+            doctor_slots.save()
 
         return doctor_obj
 

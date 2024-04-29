@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from doctors.models import doctorDetails
+from doctors.models import doctorDetails, Appointment
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
     MedicinesName, ReferToDoctors
 
@@ -127,7 +127,7 @@ class HospitalManager:
     def fetch_hospital_admin_data(request, data):
         hospital_id = request.user.hospital
         filters = Q(hospital_id=hospital_id)
-        return HospitalAdmin.objects.filter(filters).select_related("hospital")
+        return HospitalAdmin.objects.filter(filters).select_related("hospital").order_by("-created_at")
 
     @staticmethod
     def add_hospital_admin_data(request, data):
@@ -174,3 +174,28 @@ class HospitalManager:
     def fetch_doctors_hospital_patient(dataReq, data):
         filters = Q(id=data.get("hospitalId"))
         return HospitalDetails.objects.get(filters)
+
+
+    @staticmethod
+    def cancel_appointment_hospital(request, data):
+        appointmentId = data.get("appointmentId")
+        hospital = request.user.hospital
+        if appointmentId:
+            req_appointment = Appointment.objects.get(id=appointmentId, doctor__hospital_id=hospital)
+            if not req_appointment:
+                raise Exception("No appointment")
+            req_appointment.status = "canceled"
+            req_appointment.save()
+
+        else:
+            raise Exception("appointment id is not valid")
+
+    @staticmethod
+    def delete_hospital_admin(request, data):
+        adminId = data.get("adminId")
+        if adminId:
+            req_admin = HospitalAdmin.objects.get(id=adminId, hospital_id=request.user.hospital)
+            req_admin.save()
+
+        else:
+            raise Exception("Something Went Wrong")

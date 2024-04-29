@@ -4,7 +4,8 @@ from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabR
     HospitalDoctors, HospitalDoctorsProfile, HospitalAddDoctors, HandlePasswordRequest, FetchDoctorLeaveRequests, \
     FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
     FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital, HandleDoctors, \
-    HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins, handleHospitalMedicines, handleReferToMedicines
+    HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins, handleHospitalMedicines, handleReferToMedicines, \
+    cancelAppointments, HospitalEditDoctors
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -17,6 +18,7 @@ urlpatterns = [
     path(r'hospital-doctors/', HospitalDoctors.as_view(), name="hospital-doctors"),
     path(r'doctor-profile-hospital/', HospitalDoctorsProfile.as_view(), name="doctor-profile-hospital"),
     path(r'add-doctor-hospital/', HospitalAddDoctors.as_view(), name="doctor-add-hospital"),
+    path(r'edit-doctor-profile/', HospitalEditDoctors.as_view(), name="edit-doctor-profile"),
     path(r'reset-password-requests/', HandlePasswordRequest.as_view(), name="reset-password-requests"),
     path(r'change-doctors-passwword/', HandlePasswordRequest.as_view(), name="change-doctors-password"),
     path(r'fetch-leave-requests/', FetchDoctorLeaveRequests.as_view(), name="fetch-leave-requests"),
@@ -38,4 +40,6 @@ urlpatterns = [
     path(r'add-medicines-hospital/', handleHospitalMedicines.as_view(), name="add-medicines-hospital"),
     path(r'handle-hospital-refer-to/', handleReferToMedicines.as_view(), name="handle-hospital-refer-to"),
     path(r'add-hospital-refer-to/', handleReferToMedicines.as_view(), name="add-hospital-refer-to"),
+    path(r'cancel-given-appointment/', cancelAppointments.as_view(), name="cancel-given-appointment"),
+    path(r'delete-hospital-admin/', cancelAppointments.as_view(), name="cancel-given-appointment"),
 ]

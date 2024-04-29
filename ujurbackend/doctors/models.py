@@ -103,7 +103,7 @@ class DoctorLeave(models.Model):
     doctor = models.ForeignKey(doctorDetails, on_delete=models.CASCADE,  related_name="doctor_apply")
     from_date = models.DateField()
     to_date = models.DateField()
-    status = models.CharField(max_length=200, null=True, default="APPLIED")
+    status = models.CharField(max_length=200, null=True, default="Waiting for approval")
     comment = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
 
