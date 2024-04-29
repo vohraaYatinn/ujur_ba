@@ -7,7 +7,8 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     DoctorSlotsSerializer, AppointmentSerializer, AppointmentWithDepartmentSerializer, DoctorFavSerializer, \
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
-    AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer
+    AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
+    checkReviewSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -490,3 +491,24 @@ class handleDoctorMedicines(APIView):
             return Response({"result": "success", "message": "Doctor login successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+class writeReview(APIView):
+    permission_classes = [IsAuthenticated]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            DoctorsManagement.add_reviews_patient(request, data)
+            return Response({"result": "success", "message": "Review Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            check_reviews = DoctorsManagement.check_reviews_patient(request, data)
+            review_data = checkReviewSerializer(check_reviews).data
+            return Response({ "result": "success", "data": review_data }, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)

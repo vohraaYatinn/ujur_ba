@@ -169,3 +169,8 @@ class HospitalManager:
                 hospital_id=request.user.hospital,
                 name = doctor_name + " - " + hospital_name
             )
+
+    @staticmethod
+    def fetch_doctors_hospital_patient(dataReq, data):
+        filters = Q(id=data.get("hospitalId"))
+        return HospitalDetails.objects.get(filters)

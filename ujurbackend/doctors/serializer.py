@@ -216,3 +216,8 @@ class ReferToSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReferToDoctors
         fields = "__all__"
+
+class checkReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientDoctorReviews
+        fields = "__all__"

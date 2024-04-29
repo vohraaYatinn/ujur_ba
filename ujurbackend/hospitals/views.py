@@ -33,7 +33,7 @@ class HospitalFetchDoco(APIView):
     def get(request):
         try:
             data = request.query_params
-            hospital_doc_data = HospitalManager.fetch_doctors_hospital(data)
+            hospital_doc_data = HospitalManager.fetch_doctors_hospital_patient({},data)
             hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:

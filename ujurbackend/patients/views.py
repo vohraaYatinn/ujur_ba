@@ -94,3 +94,15 @@ class addNewProfilePatient(APIView):
             return Response({"result" : "success", "message": "New User Added Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+class changeProfileValue(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            user_change = PatientManager.change_profile_user(request, data)
+            return Response({"result" : "success", "message": "Profile Changed Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

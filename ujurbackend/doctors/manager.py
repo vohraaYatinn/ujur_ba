@@ -242,7 +242,7 @@ class DoctorsManagement:
         date = data.get("date")
         slot = data.get("slot")
         comment = data.get("comment")
-        bio = data.get("bio")
+        document = data.get("document")
 
         if patient_id and doctor_id and date and slot:
             latest_appointment_slot = Appointment.objects.filter(
@@ -270,6 +270,9 @@ class DoctorsManagement:
                     date_appointment=date,
                     patients_query=comment
                 )
+                if document:
+                    appointment.patient_documents = document
+                appointment.save()
 
                 return appointment.id
             else:
@@ -952,3 +955,30 @@ class DoctorsManagement:
                 name = medicines_name,
                 description = medicines_description
             )
+    @staticmethod
+    def add_reviews_patient(request, data):
+        appointmentId = data.get("appointmentId")
+        rating = data.get("rating")
+        comment = data.get("comment")
+        if appointmentId and rating and comment:
+            appointment_old = Appointment.objects.get(id=appointmentId)
+            get_old_review = PatientDoctorReviews.objects.filter(patient_id=request.user.id, doctor_id=appointment_old.doctor_id)
+            if get_old_review:
+                get_old_review[0].reviews_star = rating
+                get_old_review[0].comment = comment
+                get_old_review[0].save()
+            else:
+                PatientDoctorReviews.objects.create(patient_id=request.user.id, doctor_id=appointment_old.doctor_id,reviews_star=rating, comment=comment )
+        else:
+            raise Exception("Something went Wrong")
+
+    @staticmethod
+    def check_reviews_patient(request, data):
+        appointmentId = data.get("appointmentId")
+        if appointmentId:
+            appointment_old = Appointment.objects.get(id=appointmentId)
+            get_old_review = PatientDoctorReviews.objects.filter(patient_id=request.user.id, doctor_id=appointment_old.doctor_id)
+            return get_old_review[0]
+
+        else:
+            raise Exception("Something went Wrong")
