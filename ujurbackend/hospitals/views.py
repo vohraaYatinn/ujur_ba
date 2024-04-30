@@ -310,7 +310,7 @@ class FetchPatientsHospitals(APIView):
 
 
 class AddPatientsHospitals(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = [IsAuthenticatedAdminPanel]
 
     @staticmethod
     def post(request):

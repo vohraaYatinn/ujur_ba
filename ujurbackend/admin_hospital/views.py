@@ -8,6 +8,8 @@ from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
     DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer
 from doctors.manager import DoctorsManagement
+from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
+    DoctorReviewsWithPatientsAndDoctorSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors
 
@@ -76,9 +78,23 @@ class FetchHospitalDetails(APIView):
         try:
             data=request.query_params
             hospital_id = data.get('hospitalId', False)
-            hospital_doc_data = HospitalManager.fetch_all_doctors_hospital(hospital_id)
+            hospital_doc_data, review = HospitalManager.fetch_all_doctors_hospital(hospital_id)
             hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
-            return Response({"result" : "success", "data": hospital_serialized_data}, 200)
+            review_serialized_data = DoctorReviewsWithPatientsAndDoctorSerializer(review, many=True).data
+            return Response({"result" : "success", "data": hospital_serialized_data, "reviews":review_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class EditHospitalDetails(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+
+    @staticmethod
+    def post(request):
+        try:
+            data=request.data
+            hospital_id = data.get('hospitalId', False)
+            hospital_doc_data = HospitalManager.edit_admin_hospital(hospital_id, data)
+            return Response({"result" : "success", "message": "hospital_serialized_data"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -177,5 +193,68 @@ class HandleHospitalAdmin(APIView):
             data = request.data
             admin = AdminMainManagement.add_hospital_admin_data(data)
             return Response({"result" : "success", "message": "Hospital Admin added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+
+class DeleteHospitalAdminByUjur(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.delete_hospital_admin_by_ujur(data)
+            return Response({"result" : "success", "message": "Hospital Admin Deleted Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class DeletePatientAdminByUjur(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.delete_patient_admin_by_ujur(data)
+            return Response({"result" : "success", "message": "Patient Deleted Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class CancelAppointmentAdminByUjur(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            admin = AdminMainManagement.cancel_appointment_by_ujur(data)
+            return Response({"result" : "success", "message": "Appointment canceled Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+
+class addAdminDoctors(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            doctor_obj = DoctorsManagement.add_new_admin_doctor_hospital(request, data)
+            return Response(
+                {"result": "success", "message": "New Doctor added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class editAdminDoctors(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            doctor_obj = DoctorsManagement.edit_doctor_hospital(request, data)
+            return Response(
+                {"result": "success", "message": "Doctor edited successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

@@ -168,8 +168,8 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids).order_by("-created_by")
-        return unique_patients
+        unique_patients = Patient.objects.filter(id__in=patient_ids).union(Patient.objects.filter())
+        return unique_patients.order_by("-created_at")
 
     @staticmethod
     def all_patients_hospital(request, data):
@@ -837,13 +837,66 @@ class DoctorsManagement:
             )
 
         return doctor_obj
-
     @staticmethod
-    def edit_doctor_hospital(request, data):
-        hospital_id = request.user.hospital
+    def add_new_admin_doctor_hospital(request, data):
         hospital_admin_id = data.get("HospitalsId", False)
         if hospital_admin_id:
             hospital_id = hospital_admin_id
+        full_name = data.get("fullName", None)
+        email = data.get("email", None)
+        phone = data.get("phoneNumber", None)
+        department = data.get("department", None)
+        education = data.get("education", None)
+        address = data.get("address", None)
+        experience = data.get("experience", None)
+        specialization = data.get("specialization", None)
+        profilePhoto = data.get("profilePhoto", None)
+        bio = data.get("bio", None)
+        morningPrice = data.get("morningPrice", None)
+        afternoonPrice = data.get("afternoonPrice", None)
+        eveningPrice = data.get("eveningPrice", None)
+        morningSlots = data.get("morningSlots", None)
+        afternoonSlots = data.get("afternoonSlots", None)
+        eveningSlots = data.get("eveningSlots", None)
+        morningTime = data.get("morningTime", None)
+        eveningTime = data.get("eveningTime", None)
+        afternoonTime = data.get("afternoonTime", None)
+        license = data.get("license", None)
+        if hospital_id:
+            user = UsersDetails.objects.create(email=email,phone=phone)
+            doctor_obj = doctorDetails.objects.create(
+                user = user,
+                email = email,
+                password = "demo@123",
+                full_name = full_name,
+                bio =bio,
+                department_id=department,
+                education=education,
+                address=address,
+                experience=experience,
+                profile_picture=profilePhoto,
+                hospital_id=hospital_id,
+                specialization=specialization
+            )
+            doctor_slots = doctorSlots.objects.create(
+                doctor=doctor_obj,
+                medical_license=license,
+                morning_timings=morningTime,
+                afternoon_timings=afternoonTime,
+                evening_timings=eveningTime,
+                morning_slots=morningSlots,
+                afternoon_slots=afternoonSlots,
+                evening_slots=eveningSlots,
+                morning_slots_price=morningPrice,
+                afternoon_slots_price=afternoonPrice,
+                evening_slots_price=eveningPrice,
+
+            )
+
+        return doctor_obj
+
+    @staticmethod
+    def edit_doctor_hospital(request, data):
         doctor_id = data.get("doctor_id", None)
         full_name = data.get("fullName", None)
         email = data.get("email", None)
@@ -881,8 +934,6 @@ class DoctorsManagement:
                 doctor_obj.experience = experience
             if profilePhoto:
                 doctor_obj.profile_picture = profilePhoto
-            if hospital_id:
-                doctor_obj.hospital_id = hospital_id
             if specialization:
                 doctor_obj.specialization = specialization
             doctor_obj.save()

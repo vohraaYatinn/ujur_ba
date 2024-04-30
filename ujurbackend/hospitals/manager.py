@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from doctors.models import doctorDetails, Appointment
+from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
     MedicinesName, ReferToDoctors
 
@@ -21,9 +21,42 @@ class HospitalManager:
             filters &= Q(department=department)
         return doctorDetails.objects.filter(filters)
 
+
     @staticmethod
     def fetch_all_doctors_hospital(hospital_id):
-        return HospitalDetails.objects.filter(id=hospital_id).prefetch_related("hospital_doctors")[0]
+        hospital = HospitalDetails.objects.filter(id=hospital_id).prefetch_related("hospital_doctors")[0]
+        reviews=[]
+        if hospital:
+            doctor_ids = [doctor.id for doctor in hospital.hospital_doctors.all()]
+            reviews = PatientDoctorReviews.objects.filter(doctor_id__in=doctor_ids).select_related("doctor").select_related("patient")[:6]
+        return hospital, reviews
+
+    @staticmethod
+    def edit_admin_hospital(hospital_id, data):
+        hospital_obj = HospitalDetails.objects.get(id=hospital_id)
+        hospital_name = data.get("hospital_name", None)
+        email = data.get("email", None)
+        phone = data.get("phoneNumber", None)
+        website = data.get("website", None)
+        address = data.get("address", None)
+        description = data.get("description", None)
+        logo = data.get("logo", None)
+        if hospital_name:
+            hospital_obj.name=hospital_name
+        if email:
+            hospital_obj.email=email
+        if phone:
+            hospital_obj.contact_number=phone
+        if website:
+            hospital_obj.website=website
+        if logo:
+            hospital_obj.logo=logo
+        if description:
+            hospital_obj.description=description
+        if address:
+            hospital_obj.address=address
+        hospital_obj.save()
+
 
     @staticmethod
     def fetch_all_doctors_admin(data):

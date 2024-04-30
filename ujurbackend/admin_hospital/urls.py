@@ -2,7 +2,8 @@ from django.urls import path
 
 from admin_hospital.views import MainAdminLogin, FetchAllHospital, FetchHospitalDetails, FetchAllAppointmentsAdmin, \
     FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin, FetchMainDashboardDashboard, \
-    FetchHospitalDashboardDashboard
+    FetchHospitalDashboardDashboard, DeleteHospitalAdminByUjur, DeletePatientAdminByUjur, CancelAppointmentAdminByUjur, \
+    EditHospitalDetails, addAdminDoctors, editAdminDoctors
 from hospitals.views import FetchAllDepartments, AddDepartmentsAdmin, fetchAllReviews, FetchPatientsAdmin, \
     AddHospitalAdmin
 
@@ -13,7 +14,10 @@ urlpatterns = [
     path(r'login-main-admin/', MainAdminLogin.as_view(), name="login-main-admin"),
     path(r'all-hospitals/', FetchAllHospital.as_view(), name="all-hospitals"),
     path(r'hospital-profile/', FetchHospitalDetails.as_view(), name="all-hospitals"),
+    path(r'edit-hospital-profile/', EditHospitalDetails.as_view(), name="all-hospitals"),
     path(r'fetch-all-admin-doctors/', FetchAllDoctors.as_view(), name="all-hospitals"),
+    path(r'add-admin-doctors/', addAdminDoctors.as_view(), name="all-hospitals"),
+    path(r'edit-admin-doctors/', editAdminDoctors.as_view(), name="all-hospitals"),
     path(r'fetch-appointments-for-all-admin/', FetchAllAppointmentsAdmin.as_view(), name="fetch-appointments-for-all-admin"),
     path(r'fetch-all-department-or-hospitals/', FetchAllDepartments.as_view(), name="fetch-all-department-or-hospitals"),
     path(r'add-department-admin/', AddDepartmentsAdmin.as_view(), name="add-department-admin"),
@@ -25,6 +29,9 @@ urlpatterns = [
     path(r'delete-handle/', HandleDeleteAdmin.as_view(), name="add-hospital-admin"),
     path(r'fetch-hospital-admin/', HandleHospitalAdmin.as_view(), name="fetch-hospital-admin"),
     path(r'add-hospital-admin-user/', HandleHospitalAdmin.as_view(), name="add-hospital-admin"),
+    path(r'delete-hospital-admin-by-ujur/', DeleteHospitalAdminByUjur.as_view(), name="delete-hospital-admin-by-ujur"),
+    path(r'delete-patient-admin-by-ujur/', DeletePatientAdminByUjur.as_view(), name="delete-patient-admin-by-ujur"),
+    path(r'cancel-appointment-admin-by-ujur/', CancelAppointmentAdminByUjur.as_view(), name="cancel-appointment-admin-by-ujur"),
 
 ]
 

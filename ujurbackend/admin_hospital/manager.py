@@ -49,8 +49,17 @@ class AdminMainManagement:
         hospital_id = data.get("hospitalSearch", None)
         filters = Q()
         if hospital_id:
-            filters &= Q(id=hospital_id)
+            filters &= Q(hospital__id=hospital_id)
         return HospitalAdmin.objects.filter(filters).select_related("hospital")
+
+    @staticmethod
+    def delete_hospital_admin_by_ujur(data):
+        hospital_id = data.get("adminId", None)
+        hospital_admin = HospitalAdmin.objects.filter(id=hospital_id)
+        if hospital_admin:
+            hospital_admin[0].delete()
+        else:
+            raise Exception("There is something wrong with admin id")
 
     @staticmethod
     def add_hospital_admin_data(data):
@@ -102,3 +111,24 @@ class AdminMainManagement:
             "admin":total_admin_count,
             "reviews":total_reviews_count,
         }
+
+
+    @staticmethod
+    def delete_patient_admin_by_ujur(data):
+        hospital_id = data.get("adminId", None)
+        hospital_admin = Patient.objects.filter(id=hospital_id)
+        if hospital_admin:
+            hospital_admin[0].delete()
+        else:
+            raise Exception("There is something wrong with patient id")
+
+
+    @staticmethod
+    def cancel_appointment_by_ujur(data):
+        appointment = data.get("appointmentId", None)
+        req_appointment = Appointment.objects.filter(id=appointment)
+        if req_appointment:
+            req_appointment[0].status = "canceled"
+            req_appointment[0].save()
+        else:
+            raise Exception("There is something wrong with patient id")
