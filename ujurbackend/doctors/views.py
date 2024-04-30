@@ -400,7 +400,7 @@ class doctorLeaveApply(APIView):
             data = request.data
             DoctorsManagement.apply_leave(request, data)
             return Response(
-                {"result": "success", "message": "Doctor Prescription Has Been Saved Successfully"}, 200)
+                {"result": "success", "message": "Leave has been requested Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -429,7 +429,7 @@ class ApplyForgotPasswordRequest(APIView):
             data = request.data
             DoctorsManagement.reset_password_request_apply(request, data)
             return Response(
-                {"result": "success", "message": "Doctor Prescription Has Been Saved Successfully"}, 200)
+                {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
