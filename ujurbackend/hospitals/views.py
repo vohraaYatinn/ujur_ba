@@ -290,7 +290,7 @@ class AddHospitalAdmin(APIView):
         try:
             data = request.data
             HospitalManager.add_admin_hospital(request, data)
-            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+            return Response({"result" : "success", "message": "Hospital Admin Added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -385,7 +385,7 @@ class HandleDeleteHospital(APIView):
         try:
             data = request.data
             admin = HospitalManager.handle_delete_hospital(data)
-            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+            return Response({"result" : "success", "message": "Hospital Admin deleted successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

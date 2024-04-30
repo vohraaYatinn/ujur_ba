@@ -128,7 +128,7 @@ class DoctorsManagement:
         if hospitals:
             filters &= Q(doctor__hospital=hospitals)
         appointments = Appointment.objects.filter(filters
-        ).select_related("doctor", "patient")
+        ).select_related("doctor", "patient").order_by("-created_at")
         return appointments
 
 
@@ -168,7 +168,7 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids)
+        unique_patients = Patient.objects.filter(id__in=patient_ids).order_by("-created_by")
         return unique_patients
 
     @staticmethod

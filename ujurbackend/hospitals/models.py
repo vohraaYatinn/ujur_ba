@@ -15,6 +15,7 @@ class HospitalDetails(models.Model):
     email = models.EmailField()
     website = models.URLField(blank=True)
     logo = models.ImageField(upload_to='hospital_logos/', blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         managed = True

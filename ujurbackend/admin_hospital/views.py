@@ -140,7 +140,7 @@ class HandleAdmin(APIView):
         try:
             data = request.data
             admin = AdminMainManagement.add_admin_form(data)
-            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+            return Response({"result" : "success", "message": "UJUR Admin added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -154,7 +154,7 @@ class HandleDeleteAdmin(APIView):
         try:
             data = request.data
             admin = AdminMainManagement.handle_delete_admin(data)
-            return Response({"result" : "success", "message": "Hospital added successfully"}, 200)
+            return Response({"result" : "success", "message": "Admin Deleted successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

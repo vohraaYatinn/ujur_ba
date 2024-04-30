@@ -29,7 +29,7 @@ class AdminMainManagement:
 
     @staticmethod
     def fetch_admin_data(data):
-        return mainAdminDetails.objects.filter()
+        return mainAdminDetails.objects.filter().order_by("-created_at")
 
 
     @staticmethod

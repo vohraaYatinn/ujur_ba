@@ -45,7 +45,7 @@ class HospitalManager:
         filters = Q()
         if hospitals:
             filters &= Q(id=hospitals)
-        return HospitalDetails.objects.filter(filters)
+        return HospitalDetails.objects.filter(filters).order_by("-created_at")
 
     @staticmethod
     def fetch_lab_reports(request):
