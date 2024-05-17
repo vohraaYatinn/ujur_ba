@@ -6,7 +6,6 @@ from rest_framework.response import Response
 import jwt
 from patients.serializer import AppointmentSerializer, PatientDetailsSerializer
 
-
 class patientSignup(APIView):
     @staticmethod
     def post(request):
