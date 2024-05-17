@@ -3,7 +3,7 @@ from django.urls import path
 from admin_hospital.views import MainAdminLogin, FetchAllHospital, FetchHospitalDetails, FetchAllAppointmentsAdmin, \
     FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin, FetchMainDashboardDashboard, \
     FetchHospitalDashboardDashboard, DeleteHospitalAdminByUjur, DeletePatientAdminByUjur, CancelAppointmentAdminByUjur, \
-    EditHospitalDetails, addAdminDoctors, editAdminDoctors
+    EditHospitalDetails, addAdminDoctors, editAdminDoctors, EditHospitalAdminPassword, EditCustomerAdminPassword
 from hospitals.views import FetchAllDepartments, AddDepartmentsAdmin, fetchAllReviews, FetchPatientsAdmin, \
     AddHospitalAdmin
 
@@ -32,6 +32,8 @@ urlpatterns = [
     path(r'delete-hospital-admin-by-ujur/', DeleteHospitalAdminByUjur.as_view(), name="delete-hospital-admin-by-ujur"),
     path(r'delete-patient-admin-by-ujur/', DeletePatientAdminByUjur.as_view(), name="delete-patient-admin-by-ujur"),
     path(r'cancel-appointment-admin-by-ujur/', CancelAppointmentAdminByUjur.as_view(), name="cancel-appointment-admin-by-ujur"),
+    path(r'edit-hospital-admin-password/', EditHospitalAdminPassword.as_view(), name="forgot-password-request"),
+    path(r'edit-customer-password/', EditCustomerAdminPassword.as_view(), name="edit-customer-password"),
 
 ]
 

@@ -6,7 +6,7 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     fetchAppointmentDetailsPatient, doctorLogin, doctorFetchAppointments, FetchPatientsOfDoctor, fetchDoctorReviews, \
     fetchDoctorOwnProfile, doctorChangePassword, dashboardDetails, dashboardPatientsDetails, dashboarDoctorReviews, \
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
-    ApplyForgotPasswordRequest
+    ApplyForgotPasswordRequest, EditHospitalAdminPassword
 
 urlpatterns = [
     # doctor app api
@@ -25,6 +25,7 @@ urlpatterns = [
     path(r'doctor-fetch-leave/', doctorLeaveApply.as_view(), name="doctor-fetch-leave"),
     path(r'doctor-apply-leave/', doctorLeaveApply.as_view(), name="doctor-apply-leave-apply"),
     path(r'forgot-password-request/', ApplyForgotPasswordRequest.as_view(), name="forgot-password-request"),
+    path(r'edit-hospital-admin-password/', EditHospitalAdminPassword.as_view(), name="forgot-password-request"),
 
 
 

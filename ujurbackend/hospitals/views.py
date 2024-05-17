@@ -517,6 +517,19 @@ class cancelAppointments(APIView):
             return Response({"result" : "failure", "message":str(e)}, 500)
 
 
+class uploadLabReport(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.upload_lab_report(request, data)
+            return Response({"result": "success", "message": "Lab Report Uploaded Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
 class deleteHospitalAdmin(APIView):
     permission_classes = [IsAuthenticatedHospital]
 

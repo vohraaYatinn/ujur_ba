@@ -3,6 +3,7 @@ from django.db.models import Q
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
     MedicinesName, ReferToDoctors
+from patients.models import Patient
 
 
 class HospitalManager:
@@ -41,6 +42,8 @@ class HospitalManager:
         address = data.get("address", None)
         description = data.get("description", None)
         logo = data.get("logo", None)
+        profile = data.get("profile", None)
+
         if hospital_name:
             hospital_obj.name=hospital_name
         if email:
@@ -51,6 +54,8 @@ class HospitalManager:
             hospital_obj.website=website
         if logo:
             hospital_obj.logo=logo
+        if logo:
+            hospital_obj.hospital_image=profile
         if description:
             hospital_obj.description=description
         if address:
@@ -153,9 +158,17 @@ class HospitalManager:
         address = data.get("address", None)
         description = data.get("description", None)
         logo = data.get("logo", None)
-        if hospital_name and email and phone and website and description and logo:
-            HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, website=website, logo=logo, description=description, address=address)
-
+        profile = data.get("profile", None)
+        google_link = data.get("googleMap", None)
+        if hospital_name and email and phone and website and logo and profile:
+            hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile)
+            if website:
+                hospital_proj.website = website
+            if description:
+                hospital_proj.description = description
+            if google_link:
+                hospital_proj.google_link = google_link
+            hospital_proj.save()
     @staticmethod
     def fetch_hospital_admin_data(request, data):
         hospital_id = request.user.hospital
@@ -230,5 +243,40 @@ class HospitalManager:
             req_admin = HospitalAdmin.objects.get(id=adminId, hospital_id=request.user.hospital)
             req_admin.save()
 
+        else:
+            raise Exception("Something Went Wrong")
+
+    @staticmethod
+    def upload_lab_report(request, data):
+        appointment = data.get("appointmentId", False)
+        lab_report = data.get("labReport", False)
+        if appointment:
+            req_admin = Appointment.objects.get(id=appointment)
+            req_admin.lab_report = lab_report
+            req_admin.save()
+        else:
+            raise Exception("Something Went Wrong")
+
+    @staticmethod
+    def edit_hospital_admin_password(request, data):
+        admin_id = data.get("adminId")
+        password = data.get("password")
+        if admin_id and password:
+            req_admin = HospitalAdmin.objects.get(id=admin_id)
+            req_admin.password = password
+            req_admin.save()
+
+        else:
+            raise Exception("Something Went Wrong")
+
+
+    @staticmethod
+    def edit_patient_admin_password(request, data):
+        patient_id = data.get("patientId")
+        password = data.get("password")
+        if patient_id and password:
+            req_password = Patient.objects.get(id=patient_id)
+            req_password.password = password
+            req_password.save()
         else:
             raise Exception("Something Went Wrong")

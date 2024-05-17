@@ -1,5 +1,5 @@
 import jwt
-from rest_framework.permissions import IsAuthenticated, IsDoctorAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsDoctorAuthenticated, IsAuthenticatedAdminPanel
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from doctors.manager import DoctorsManagement
@@ -9,6 +9,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
     checkReviewSerializer
+from hospitals.manager import HospitalManager
 
 
 class DoctorFetchDashboard(APIView):
@@ -428,6 +429,19 @@ class ApplyForgotPasswordRequest(APIView):
         try:
             data = request.data
             DoctorsManagement.reset_password_request_apply(request, data)
+            return Response(
+                {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class EditHospitalAdminPassword(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.edit_hospital_admin_password(request, data)
             return Response(
                 {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
         except Exception as e:

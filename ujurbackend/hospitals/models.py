@@ -14,6 +14,8 @@ class HospitalDetails(models.Model):
     contact_number = models.CharField(max_length=15)
     email = models.EmailField()
     website = models.URLField(blank=True)
+    google_link = models.TextField(blank=True)
+    hospital_image = models.ImageField(upload_to='hospital_images/', blank=True, null=True)
     logo = models.ImageField(upload_to='hospital_logos/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 

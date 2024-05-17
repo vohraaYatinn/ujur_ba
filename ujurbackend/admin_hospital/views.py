@@ -258,3 +258,29 @@ class editAdminDoctors(APIView):
                 {"result": "success", "message": "Doctor edited successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+
+class EditHospitalAdminPassword(APIView):
+    permission_classes = []
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.edit_hospital_admin_password(request, data)
+            return Response(
+                {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class EditCustomerAdminPassword(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.edit_patient_admin_password(request, data)
+            return Response(
+                {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

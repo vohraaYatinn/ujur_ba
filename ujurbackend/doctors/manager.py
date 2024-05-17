@@ -517,10 +517,10 @@ class DoctorsManagement:
             canceled_count = sum(appt['count'] for appt in appointments if appt['status'] == 'canceled')
             completed_count = sum(appt['count'] for appt in appointments if appt['status'] == 'completed')
 
-            total.append(total_count)
-            pending.append(pending_count)
-            canceled.append(canceled_count)
-            completed.append(completed_count)
+            total.append(int(total_count))
+            pending.append(int(pending_count))
+            canceled.append(int(canceled_count))
+            completed.append(int(completed_count))
             if period == 'Week':
                 time_period_dict[index] = weekday_aliases[current_date.weekday()]
             if period == 'Month':
@@ -750,6 +750,7 @@ class DoctorsManagement:
             if action == "approve" and doctor_obj:
                 doctor_obj[0].doctor.password = password
                 doctor_obj[0].status = "APPROVED"
+                doctor_obj[0].doctor.save()
                 doctor_obj[0].save()
             else:
                 doctor_obj[0].status = "CANCELLED"
@@ -890,7 +891,6 @@ class DoctorsManagement:
                 morning_slots_price=morningPrice,
                 afternoon_slots_price=afternoonPrice,
                 evening_slots_price=eveningPrice,
-
             )
 
         return doctor_obj
@@ -1022,7 +1022,7 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if department:
             filters &= Q(doctor__department=department)
-        return Patient
+        return PatientDoctorReviews.objects.filter(filters)
 
     @staticmethod
     def get_all_hospital_reviews(request, data):
