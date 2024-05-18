@@ -1,7 +1,7 @@
 from sqlite3 import IntegrityError
 
 from doctors.models import doctorDetails, doctorSlots, FavDoctors, Appointment, PatientDoctorReviews, DoctorLeave, \
-    ResetPasswordRequest
+    ResetPasswordRequest, HospitalPatientReviews
 from django.db.models import Avg, Count, Prefetch
 from django.db.models.functions import Round
 from datetime import datetime, timedelta
@@ -1101,6 +1101,35 @@ class DoctorsManagement:
             appointment_old = Appointment.objects.get(id=appointmentId)
             get_old_review = PatientDoctorReviews.objects.filter(patient_id=request.user.id, doctor_id=appointment_old.doctor_id)
             return get_old_review[0]
+
+        else:
+            raise Exception("Something went Wrong")
+    @staticmethod
+    def add_reviews_patient_hospital(request, data):
+        appointmentId = data.get("appointmentId")
+        rating = data.get("rating")
+        comment = data.get("comment")
+        if appointmentId and rating and comment:
+            appointment_old = Appointment.objects.get(id=appointmentId)
+            get_old_review = HospitalPatientReviews.objects.filter(patient_id=request.user.id, hospital_id=appointment_old.doctor.hospital_id)
+            if get_old_review:
+                get_old_review[0].reviews_star = rating
+                get_old_review[0].comment = comment
+                get_old_review[0].save()
+            else:
+                HospitalPatientReviews.objects.create(patient_id=request.user.id, hospital_id=appointment_old.doctor.hospital_id,reviews_star=rating, comment=comment )
+        else:
+            raise Exception("Something went Wrong")
+
+    @staticmethod
+    def check_reviews_patient_hospital(request, data):
+        appointmentId = data.get("appointmentId", False)
+        if appointmentId:
+            appointment_old = Appointment.objects.get(id=appointmentId)
+            get_old_review = HospitalPatientReviews.objects.filter(patient_id=request.user.id, hospital_id=appointment_old.doctor.hospital_id)
+            if get_old_review:
+                return get_old_review[0]
+            return []
 
         else:
             raise Exception("Something went Wrong")

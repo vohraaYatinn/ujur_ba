@@ -86,7 +86,11 @@ class PatientManager:
             block = data.get("block")
 
             patient = Patient.objects.get(id=user_created)
-            check_number = Patient.objects.filter(created_by=patient).count()
+            if patient.created_by:
+                to_check = patient.created_by
+            else:
+                to_check = patient
+            check_number = Patient.objects.filter(created_by=to_check).count()
             if check_number > 4:
                 raise Exception("You can only create upto 5 members")
             new_patient = Patient.objects.create(
@@ -106,6 +110,7 @@ class PatientManager:
     def change_profile_user(requests, data):
         try:
             user_created = requests.user.id
+            document = data.get("document", False)
             full_name = data.get("full_name")
             gender = data.get("gender")
             date_of_birth = data.get("date_of_birth")
@@ -141,6 +146,8 @@ class PatientManager:
 
             if height:
                 new_patient.height = height
+            if document:
+                new_patient.profile_picture = document
             new_patient.save()
             return new_patient
         except:

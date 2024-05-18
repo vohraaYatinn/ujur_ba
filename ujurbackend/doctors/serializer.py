@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from doctors.models import doctorDetails, doctorSlots, PatientDoctorReviews, Appointment, FavDoctors, DoctorLeave, \
-    ResetPasswordRequest
+    ResetPasswordRequest, HospitalPatientReviews
 from hospitals.models import MedicinesName, ReferToDoctors
 from hospitals.serializer import HospitalSerializer, DepartmentSerializer, HospitalDoctorSerializer
 from patients.models import Patient
@@ -219,4 +219,9 @@ class ReferToSerializer(serializers.ModelSerializer):
 class checkReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientDoctorReviews
+        fields = "__all__"
+
+class checkHospitalReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HospitalPatientReviews
         fields = "__all__"

@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from doctors.models import HospitalPatientReviews
 from hospitals.models import HospitalDetails, DepartmentHospitalMapping, Department, HospitalAdmin, MedicinesName, LabReports, ReferToDoctors
 
 admin.site.register(HospitalDetails)
@@ -8,3 +10,4 @@ admin.site.register(DepartmentHospitalMapping)
 admin.site.register(LabReports)
 admin.site.register(MedicinesName)
 admin.site.register(ReferToDoctors)
+admin.site.register(HospitalPatientReviews)

@@ -8,7 +8,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
-    checkReviewSerializer
+    checkReviewSerializer, checkHospitalReviewSerializer
 from hospitals.manager import HospitalManager
 
 
@@ -523,6 +523,27 @@ class writeReview(APIView):
             data = request.query_params
             check_reviews = DoctorsManagement.check_reviews_patient(request, data)
             review_data = checkReviewSerializer(check_reviews).data
+            return Response({ "result": "success", "data": review_data }, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
+class writeReviewHospital(APIView):
+    permission_classes = [IsAuthenticated]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            DoctorsManagement.add_reviews_patient_hospital(request, data)
+            return Response({"result": "success", "message": "Hospital Review Added Successfully"}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            check_reviews = DoctorsManagement.check_reviews_patient_hospital(request, data)
+            review_data = checkHospitalReviewSerializer(check_reviews).data
             return Response({ "result": "success", "data": review_data }, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)

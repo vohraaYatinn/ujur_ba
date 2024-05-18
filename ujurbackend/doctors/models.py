@@ -95,6 +95,17 @@ class PatientDoctorReviews(models.Model):
         managed = True
         db_table = "patient_doctor_reviews"
 
+class HospitalPatientReviews(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patient_hospital", null=True)
+    hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE,  related_name="hospital_reviews", null=True)
+    reviews_star = models.IntegerField(null=True)
+    comment = models.TextField(null=True)
+    created_at = models.DateTimeField(default=timezone.now, null=True)
+
+    class Meta:
+        managed = True
+        db_table = "hospital_doctor_reviews"
+
 
 
 # APPLIED
