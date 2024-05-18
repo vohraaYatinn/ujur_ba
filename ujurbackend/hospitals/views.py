@@ -541,3 +541,39 @@ class deleteHospitalAdmin(APIView):
             return Response({"result": "success", "message": "Admin Deleted Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class hospitalAnalyticsGraphs(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            data_check = HospitalManager.analytics_graphs_hospital(request, data)
+            return Response({"result": "success", "message": "Lab Report Uploaded Successfully", "data":data_check}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class genderGraphFetch(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            data_check = HospitalManager.gender_analytics_graphs_hospital(request, data)
+            return Response({"result": "success", "message": "Lab Report Uploaded Successfully", "data":data_check}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class ageGraphsFetch(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            data_check = HospitalManager.age_analytics_graphs_hospital(request, data)
+            return Response({"result": "success", "message": "Lab Report Uploaded Successfully", "data":data_check}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

@@ -11,3 +11,14 @@ class mainAdminDetails(models.Model):
     class Meta:
         managed = True
         db_table = "admin_details"
+
+class promoCodes(models.Model):
+    promocode = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=100, null=True)
+    percentage = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = True
+        db_table = "promocode_details"

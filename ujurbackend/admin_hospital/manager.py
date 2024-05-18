@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from admin_hospital.models import mainAdminDetails
+from admin_hospital.models import mainAdminDetails, promoCodes
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
 from hospitals.models import HospitalDetails, HospitalAdmin, LabReports
 from patients.models import Patient
@@ -132,3 +132,33 @@ class AdminMainManagement:
             req_appointment[0].save()
         else:
             raise Exception("There is something wrong with patient id")
+
+
+    @staticmethod
+    def get_promo_code(request):
+        return promoCodes.objects.filter().order_by("-created_at")
+
+    @staticmethod
+    def add_promo_code(request, data):
+        promocode = data.get("promocode", None)
+        description = data.get("description", None)
+        percentage = data.get("percentage", None)
+        if promocode and description and percentage:
+            check_if_promo = promoCodes.objects.filter(promocode=promocode).exists()
+            if check_if_promo:
+                raise Exception("Same Promo code has already been added")
+            return promoCodes.objects.create(promocode=promocode, description=description, percentage=percentage)
+        else:
+            raise Exception("Something is missing in the form")
+
+    @staticmethod
+    def delete_promo_code(request, data):
+        promocodeId = data.get("promocodeId", None)
+        if promocodeId:
+            check_if_promo = promoCodes.objects.filter(id=promocodeId)
+            if check_if_promo:
+                check_if_promo[0].delete()
+            else:
+                raise Exception("Same Promo code has already been added")
+        else:
+            raise Exception("Something is missing in the form")

@@ -1,9 +1,13 @@
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
     MedicinesName, ReferToDoctors
 from patients.models import Patient
+from django.utils.timezone import now
+from datetime import datetime, timedelta
+
+
 
 
 class HospitalManager:
@@ -280,3 +284,90 @@ class HospitalManager:
             req_password.save()
         else:
             raise Exception("Something Went Wrong")
+
+
+    @staticmethod
+    def analytics_graphs_hospital(request, data):
+        today = now().date()
+        period = data.get("time", "week")
+        if period == 'week':
+            start_date = today - timedelta(days=today.weekday())
+        elif period == 'month':
+            start_date = today.replace(day=1)
+        elif period == 'year':
+            start_date = today.replace(month=1, day=1)
+        else:
+            start_date = today.replace(day=1)
+
+        department_patient_count = Appointment.objects.filter(
+        date_appointment__gte=start_date, doctor__hospital=request.user.hospital
+    ).values(
+            'doctor__department__name'
+        ).annotate(
+            patient_count=Count('patient')
+        ).order_by('-patient_count')
+        department_patient_count_dict = {}
+
+        # Print the results (or you can return this data to be used in your views/templates)
+        for entry in department_patient_count:
+            department_patient_count_dict[entry['doctor__department__name']] = entry['patient_count']
+
+        return department_patient_count_dict
+
+
+    @staticmethod
+    def gender_analytics_graphs_hospital(request, data):
+        today = now().date()
+        period = data.get("time", "week")
+        if period == 'week':
+            start_date = today - timedelta(days=today.weekday())
+        elif period == 'month':
+            start_date = today.replace(day=1)
+        elif period == 'year':
+            start_date = today.replace(month=1, day=1)
+        else:
+            start_date = today.replace(day=1)
+
+        department_patient_count = Appointment.objects.filter(
+        date_appointment__gte=start_date, doctor__hospital=request.user.hospital
+    ).values(
+            'patient__gender'
+        ).annotate(
+            patient_count=Count('patient')
+        ).order_by('-patient_count')
+        department_patient_count_dict = {}
+
+        # Print the results (or you can return this data to be used in your views/templates)
+        for entry in department_patient_count:
+            department_patient_count_dict[entry['patient__gender']] = entry['patient_count']
+
+        return department_patient_count_dict
+
+
+    @staticmethod
+    def age_analytics_graphs_hospital(request, data):
+        today = now().date()
+        period = data.get("time", "week")
+        if period == 'week':
+            start_date = today - timedelta(days=today.weekday())
+        elif period == 'month':
+            start_date = today.replace(day=1)
+        elif period == 'year':
+            start_date = today.replace(month=1, day=1)
+        else:
+            start_date = today.replace(day=1)
+
+        department_patient_count = Appointment.objects.filter(
+        date_appointment__gte=start_date, doctor__hospital=request.user.hospital
+    ).values(
+            'doctor__department__name'
+        ).annotate(
+            patient_count=Count('patient')
+        ).order_by('-patient_count')
+        department_patient_count_dict = {}
+
+        # Print the results (or you can return this data to be used in your views/templates)
+        for entry in department_patient_count:
+            department_patient_count_dict[entry['doctor__department__name']] = entry['patient_count']
+
+        return department_patient_count_dict

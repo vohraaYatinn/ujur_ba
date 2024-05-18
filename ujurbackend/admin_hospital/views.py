@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
-    DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer
+    DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer, PromoCodeSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
     DoctorReviewsWithPatientsAndDoctorSerializer
@@ -282,5 +282,39 @@ class EditCustomerAdminPassword(APIView):
             HospitalManager.edit_patient_admin_password(request, data)
             return Response(
                 {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class AddPromoCode(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            AdminMainManagement.add_promo_code(request, data)
+            return Response(
+                {"result": "success", "message": "New Promo Code has been created"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def get(request):
+        try:
+            data = AdminMainManagement.get_promo_code(request)
+            seralizer_data = PromoCodeSerializer(data,many=True).data
+            return Response(
+                {"result": "success", "message": "New Promo Code has been created","data":seralizer_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class deletePromoCode(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            AdminMainManagement.delete_promo_code(request, data)
+            return Response(
+                {"result": "success", "message": "Selected Promo Code has been deleted"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
