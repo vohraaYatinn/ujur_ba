@@ -146,8 +146,7 @@ class AppointmentWithDoctorSerializer(serializers.ModelSerializer):
 
 class AppointmentWithDoctorAndPatientSerializer(serializers.ModelSerializer):
     patient = PatientDetailsFprDoctorSerializer()
-
-    doctor = DoctorModelSerializer()
+    doctor = DoctorHospitalSerializer()
     class Meta:
         model = Appointment
         fields = "__all__"

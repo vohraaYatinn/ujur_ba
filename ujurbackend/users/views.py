@@ -26,14 +26,15 @@ class PhoneOtpVerify(APIView):
             user_exist = UserManager.phone_otp_verify(data)
             token = False
             if user_exist == "user exists":
-                phone_number = data.get('phoneNumber', False)
-                patient = Patient.objects.get(user__phone = phone_number,created_by=None)
+                email = data.get('email', False)
+                patient = Patient.objects.get(user__email = email,created_by=None)
                 payload = {
-                    'phone_number': phone_number,
                     'patient': patient.id
                 }
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
 
-            return Response({"result" : "success", "userType":user_exist, "token":token}, 200)
+                return Response({"result" : "success", "userType":user_exist, "token":token}, 200)
+            else:
+                return Response({"result" : "failure", "message":"Invalid Username or Password"}, 200)
         except Exception as err:
             return Response(str(err), 500)

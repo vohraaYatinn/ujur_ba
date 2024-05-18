@@ -21,24 +21,9 @@ class UserManager:
 
     @staticmethod
     def phone_otp_verify(data):
-        phone_number = data.get('phoneNumber', False)
-        first_digit = data.get("firstDigit", False)
-        second_digit = data.get("secondDigit", False)
-        third_digit = data.get("thirdDigit", False)
-        fourth_digit = data.get("fourthDigit", False)
-        fifth_digit = data.get("fifthDigit", False)
-        otp = first_digit+second_digit+third_digit+fourth_digit+fifth_digit
-        if phone_number and otp:
-            try:
-                otpPhone.objects.get(phone_number=phone_number, otp=otp)
-            except otpPhone.DoesNotExist:
-                raise Exception("Otp Entered is Invalid or Expired, Please Try again")
-            check_if_user_exist = UsersDetails.objects.filter(phone=phone_number)
-            if check_if_user_exist:
-                response = "user exists"
-            else:
-                UsersDetails.objects.create(phone=phone_number, role=CommonConstants.user_roles['patient'])
-                response = "new user"
-            return response
-        else:
-            raise Exception("Phone and Otp is required")
+        email = data.get('email', False)
+        password = data.get("password", False)
+        check_if_user_exist = UsersDetails.objects.filter(email=email,password=password)
+        if check_if_user_exist:
+            return "user exists"
+        return False

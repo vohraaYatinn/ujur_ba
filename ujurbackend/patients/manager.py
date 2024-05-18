@@ -1,4 +1,7 @@
 from django.db import IntegrityError
+from django.db.models import Q
+
+from doctors.models import PatientDoctorReviews
 from patients.models import Patient
 from users.models import UsersDetails
 
@@ -7,17 +10,22 @@ class PatientManager:
     @staticmethod
     def patient_signup(requests, data):
         try:
+            profile_photo = data.get("document")
             phone_number = data.get("phoneNumber")
+            password = data.get("password")
             full_name = data.get("fullName")
             gender = data.get("gender")
             email = data.get("email")
             date_of_birth = data.get("dob")
-            # blood_group = data.get("bloodGroup")
-            # weight = data.get("weight")
+            weight = data.get("weight", None)
+            height = data.get("height", None)
             district = data.get("district")
             block = data.get("block")
             if phone_number and full_name and gender and email and date_of_birth and district and block:
-                user = UsersDetails.objects.get(phone=phone_number)
+                user_check = UsersDetails.objects.filter(Q(email=email) | Q(phone=phone_number))
+                if user_check:
+                    raise Exception("This Phone number or Emails already exists")
+                user = UsersDetails.objects.create(phone=phone_number, email=email,password=password, role="patient")
                 if email:
                     user.email = email
                     user.save()
@@ -26,11 +34,14 @@ class PatientManager:
                     full_name=full_name,
                     gender=gender,
                     date_of_birth=date_of_birth,
-                    # blood_group=blood_group,
-                    # weight=weight,
                     district=district,
-                    block=block
+                    block=block,
+                    weight=weight,
+                    height=height
                 )
+                if profile_photo:
+                    new_patient.profile_picture = profile_photo
+                    new_patient.save()
                 return new_patient
             else:
                 raise Exception("All fields mentioned are compulsory")
@@ -75,6 +86,9 @@ class PatientManager:
             block = data.get("block")
 
             patient = Patient.objects.get(id=user_created)
+            check_number = Patient.objects.filter(created_by=patient).count()
+            if check_number > 4:
+                raise Exception("You can only create upto 5 members")
             new_patient = Patient.objects.create(
                 user=patient.user,
                 full_name=full_name,
@@ -132,3 +146,12 @@ class PatientManager:
         except:
             raise Exception ("Something Went Wrong")
 
+
+    @staticmethod
+    def fetch_customer_reviews(request, data):
+        try:
+            patient_id = request.user.id
+            if patient_id:
+                return PatientDoctorReviews.objects.filter(patient__id =patient_id).select_related('doctor').select_related("patient")
+        except:
+            pass

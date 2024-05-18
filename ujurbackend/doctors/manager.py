@@ -358,7 +358,7 @@ class DoctorsManagement:
         if appointment_id:
             latest_appointment = Appointment.objects.filter(
                 id=appointment_id
-            ).select_related("doctor").select_related("patient").order_by("-created_at")
+            ).select_related("doctor").select_related("patient").select_related("doctor__hospital").order_by("-created_at")
             slot = latest_appointment[0].slot
             date = latest_appointment[0].date_appointment
 
