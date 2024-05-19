@@ -1,6 +1,7 @@
 from django.urls import include, path
 from patients.views import patientSignup, BookAppointmentPatient, FetchPatientAppointments, fetchPatientPersonalDetails, \
-    addNewProfilePatient, changeJwt, changeProfileValue, fetchCustomerReviews
+    addNewProfilePatient, changeJwt, changeProfileValue, fetchCustomerReviews, fetchCustomerReviewsHospital, \
+    fetchLabReports
 
 urlpatterns = [
     path(r'patient-signup/', patientSignup.as_view(), name="phone_otp"),
@@ -11,4 +12,6 @@ urlpatterns = [
     path(r'add-new-profile/', addNewProfilePatient.as_view(), name="add-new-profile"),
     path(r'change-profile-values/', changeProfileValue.as_view(), name="change-profile-values"),
     path(r'fetch_customer_reviews/', fetchCustomerReviews.as_view(), name="fetch_customer_reviews"),
+    path(r'fetch_customer_reviews_hospitals/', fetchCustomerReviewsHospital.as_view(), name="fetch_customer_reviews"),
+    path(r'fetch_patients_lab_reports/', fetchLabReports.as_view(), name="fetch_customer_reviews"),
 ]

@@ -50,7 +50,7 @@ class AdminMainManagement:
         filters = Q()
         if hospital_id:
             filters &= Q(hospital__id=hospital_id)
-        return HospitalAdmin.objects.filter(filters).select_related("hospital")
+        return HospitalAdmin.objects.filter(filters).select_related("hospital").order_by("-created_at")
 
     @staticmethod
     def delete_hospital_admin_by_ujur(data):

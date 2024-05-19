@@ -168,7 +168,7 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids).union(Patient.objects.filter())
+        unique_patients = Patient.objects.filter(id__in=patient_ids).annotate(user_email=F('user__email')).union(Patient.objects.annotate(user_email=F('user__email')))
         return unique_patients.order_by("-created_at")
 
     @staticmethod
@@ -573,7 +573,7 @@ class DoctorsManagement:
             Q(education__icontains=search_keyword) |
             Q(department__name__icontains=search_keyword) |
             Q(hospital__name__icontains=search_keyword)
-        )[:4]
+        ).select_related("hospital")[:4]
 
         hospitals = HospitalDetails.objects.filter(
             Q(name__icontains=search_keyword) |
@@ -587,7 +587,9 @@ class DoctorsManagement:
                 "id":i.id,
                 "name":i.full_name,
                 "batch":"doctor",
-                "img": str(i.profile_picture)
+                "img": str(i.profile_picture),
+                "hospital": i.hospital.name
+
             })
         for i in hospitals:
             list_to_give.append({

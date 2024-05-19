@@ -20,6 +20,12 @@ class PatientDetailsFprDoctorSerializer(serializers.ModelSerializer):
         model = Patient
         fields = "__all__"
 
+class PatientDetailsFprDoctorWithEmailSerializer(serializers.ModelSerializer):
+    user_email = serializers.CharField()
+    class Meta:
+        model = Patient
+        fields = "__all__"
+
 class DoctorModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = doctorDetails
@@ -28,6 +34,13 @@ class DoctorModelSerializer(serializers.ModelSerializer):
 
 class DoctorModelWithDepartmentHospitalSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer()
+    hospital = HospitalDoctorSerializer()
+
+    class Meta:
+        model = doctorDetails
+        fields = "__all__"
+
+class DoctorModelWithHospitalSerializer(serializers.ModelSerializer):
     hospital = HospitalDoctorSerializer()
 
     class Meta:
@@ -197,6 +210,13 @@ class DoctorReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class HospitalReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
+    hospital = HospitalDoctorSerializer()
+    patient = PatientDetailsFprDoctorSerializer()
+    class Meta:
+        model = HospitalPatientReviews
+        fields = "__all__"
+
 
 class DoctorReviewsWithPatientsAndDoctorHospitalSerializer(serializers.ModelSerializer):
     doctor = DoctorModelSerializer(many=True)
@@ -224,4 +244,12 @@ class checkReviewSerializer(serializers.ModelSerializer):
 class checkHospitalReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalPatientReviews
+        fields = "__all__"
+
+
+
+class AppointmentWithDoctorSerializer(serializers.ModelSerializer):
+    doctor = DoctorModelWithHospitalSerializer()
+    class Meta:
+        model = Appointment
         fields = "__all__"

@@ -513,7 +513,7 @@ class writeReview(APIView):
         try:
             data = request.data
             DoctorsManagement.add_reviews_patient(request, data)
-            return Response({"result": "success", "message": "Review Added Successfully"}, 200)
+            return Response({"result": "success", "message": "Doctoer Review Added Successfully"}, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 

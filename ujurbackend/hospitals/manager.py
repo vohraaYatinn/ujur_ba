@@ -47,6 +47,7 @@ class HospitalManager:
         description = data.get("description", None)
         logo = data.get("logo", None)
         profile = data.get("profile", None)
+        google_maps = data.get("googleMap", None)
 
         if hospital_name:
             hospital_obj.name=hospital_name
@@ -64,6 +65,8 @@ class HospitalManager:
             hospital_obj.description=description
         if address:
             hospital_obj.address=address
+        if google_maps:
+            hospital_obj.google_link=google_maps
         hospital_obj.save()
 
 
@@ -164,7 +167,7 @@ class HospitalManager:
         logo = data.get("logo", None)
         profile = data.get("profile", None)
         google_link = data.get("googleMap", None)
-        if hospital_name and email and phone and website and logo and profile:
+        if hospital_name and email and phone and logo and profile:
             hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile)
             if website:
                 hospital_proj.website = website
@@ -173,6 +176,8 @@ class HospitalManager:
             if google_link:
                 hospital_proj.google_link = google_link
             hospital_proj.save()
+        else:
+            raise Exception("Something is missing")
     @staticmethod
     def fetch_hospital_admin_data(request, data):
         hospital_id = request.user.hospital

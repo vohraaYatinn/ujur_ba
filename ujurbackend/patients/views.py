@@ -1,7 +1,8 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from doctors.manager import DoctorsManagement
-from doctors.serializer import DoctorReviewsWithPatientsAndDoctorSerializer
+from doctors.serializer import DoctorReviewsWithPatientsAndDoctorSerializer, \
+    HospitalReviewsWithPatientsAndDoctorSerializer, AppointmentWithDoctorSerializer
 from patients.manager import PatientManager
 from rest_framework.response import Response
 import jwt
@@ -117,6 +118,32 @@ class fetchCustomerReviews(APIView):
             data = request.query_params
             user_change = PatientManager.fetch_customer_reviews(request, data)
             personal_data = DoctorReviewsWithPatientsAndDoctorSerializer(user_change, many=True).data
+            return Response({"result" : "success", "message": "Profile Changed Successfully", "data":personal_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class fetchCustomerReviewsHospital(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            user_change = PatientManager.fetch_customer_hospital_reviews(request, data)
+            personal_data = HospitalReviewsWithPatientsAndDoctorSerializer(user_change, many=True).data
+            return Response({"result" : "success", "message": "Profile Changed Successfully", "data":personal_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class fetchLabReports(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            user_change = PatientManager.fetch_lab_reports_customers(request, data)
+            personal_data = AppointmentWithDoctorSerializer(user_change, many=True).data
             return Response({"result" : "success", "message": "Profile Changed Successfully", "data":personal_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

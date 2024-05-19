@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.db.models import Q
 
-from doctors.models import PatientDoctorReviews
+from doctors.models import PatientDoctorReviews, HospitalPatientReviews, Appointment
 from patients.models import Patient
 from users.models import UsersDetails
 
@@ -160,5 +160,22 @@ class PatientManager:
             patient_id = request.user.id
             if patient_id:
                 return PatientDoctorReviews.objects.filter(patient__id =patient_id).select_related('doctor').select_related("patient")
+        except:
+            pass
+
+    @staticmethod
+    def fetch_customer_hospital_reviews(request, data):
+        try:
+            patient_id = request.user.id
+            if patient_id:
+                return HospitalPatientReviews.objects.filter(patient__id =patient_id).select_related('hospital').select_related("patient")
+        except:
+            pass
+    @staticmethod
+    def fetch_lab_reports_customers(request, data):
+        try:
+            patient_id = request.user.id
+            if patient_id:
+                return Appointment.objects.filter(patient__id =patient_id, lab_report__isnull=False).select_related('doctor').select_related('doctor__hospital')
         except:
             pass
