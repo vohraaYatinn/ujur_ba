@@ -155,21 +155,14 @@ class DoctorsManagement:
     def all_patients_admin(request, data):
         patient_name = data.get('patientName', False)
         doctor_name = data.get('doctorName', False)
-        hospitals = data.get('hospitalSearch', False)
-        department = data.get('department', False)
 
         filters = Q()
         if patient_name:
-            filters &= Q(patient__full_name__icontains = patient_name)
+            filters &= Q(full_name__icontains = patient_name)
         if doctor_name:
-            filters &= Q(doctor__full_name__icontains = doctor_name)
-        if hospitals:
-            filters &= Q(doctor__hospital=hospitals)
-        if department:
-            filters &= Q(doctor__department=department)
-        patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids).annotate(user_email=F('user__email')).union(Patient.objects.annotate(user_email=F('user__email')))
-        return unique_patients.order_by("-created_at")
+            filters &= Q(full_name__icontains = doctor_name)
+        unique_patients = Patient.objects.filter(filters).select_related("user").order_by("-created_at")
+        return unique_patients
 
     @staticmethod
     def all_patients_hospital(request, data):

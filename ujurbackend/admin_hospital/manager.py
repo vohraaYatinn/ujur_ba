@@ -162,3 +162,15 @@ class AdminMainManagement:
                 raise Exception("Same Promo code has already been added")
         else:
             raise Exception("Something is missing in the form")
+
+    @staticmethod
+    def delete_promo_code(request, data):
+        promocodeId = data.get("promocodeId", None)
+        if promocodeId:
+            check_if_promo = promoCodes.objects.filter(id=promocodeId)
+            if check_if_promo:
+                check_if_promo[0].delete()
+            else:
+                raise Exception("Same Promo code has already been added")
+        else:
+            raise Exception("Something is missing in the form")

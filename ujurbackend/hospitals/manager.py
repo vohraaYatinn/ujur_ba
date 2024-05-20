@@ -1,6 +1,6 @@
 from django.db.models import Q, Count
 
-from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
+from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
     MedicinesName, ReferToDoctors
 from patients.models import Patient
@@ -35,6 +35,19 @@ class HospitalManager:
             doctor_ids = [doctor.id for doctor in hospital.hospital_doctors.all()]
             reviews = PatientDoctorReviews.objects.filter(doctor_id__in=doctor_ids).select_related("doctor").select_related("patient")[:6]
         return hospital, reviews
+
+
+    @staticmethod
+    def fetch_all_hospital_reviews(data):
+        hospital = data.get("hospitalSearch", False)
+        patient = data.get("patientName", False)
+        filters = Q()
+        if hospital:
+            filters &= Q(hospital_id=hospital)
+        if patient:
+            filters &= Q(patient__full_name__icontains=patient)
+        reviews = HospitalPatientReviews.objects.filter(filters).select_related("hospital").select_related("patient")
+        return reviews
 
     @staticmethod
     def edit_admin_hospital(hospital_id, data):
@@ -285,8 +298,8 @@ class HospitalManager:
         password = data.get("password")
         if patient_id and password:
             req_password = Patient.objects.get(id=patient_id)
-            req_password.password = password
-            req_password.save()
+            req_password.user.password = password
+            req_password.user.save()
         else:
             raise Exception("Something Went Wrong")
 

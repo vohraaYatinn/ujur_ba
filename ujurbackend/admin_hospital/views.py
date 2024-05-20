@@ -6,7 +6,8 @@ from rest_framework.response import Response
 
 from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
-    DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer, PromoCodeSerializer
+    DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer, PromoCodeSerializer, \
+    HospitalReviewsWithPatientsSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
     DoctorReviewsWithPatientsAndDoctorSerializer
@@ -316,5 +317,18 @@ class deletePromoCode(APIView):
             AdminMainManagement.delete_promo_code(request, data)
             return Response(
                 {"result": "success", "message": "Selected Promo Code has been deleted"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class fetchAllReviewsHospital(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            reviews = HospitalManager.fetch_all_hospital_reviews(data)
+            seralizer_data = HospitalReviewsWithPatientsSerializer(reviews,many=True).data
+            return Response(
+                {"result": "success", "data": seralizer_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

@@ -7,7 +7,7 @@ from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAve
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
     AppointmentWithDepartmentandDoctorSerializer, DoctorReviewsSerializer, DoctorReviewsWithPatientsAndDoctorSerializer, \
     PatientDetailsFprDoctorSerializer, MedicinesSerializer, ReferToSerializer, \
-    PatientDetailsFprDoctorWithEmailSerializer
+    PatientDetailsFprDoctorWithEmailSerializer, PatientDetailsWithUserDoctorSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, LabReportsSerializer, \
     DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer
@@ -278,7 +278,7 @@ class FetchPatientsAdmin(APIView):
         try:
             data = request.query_params
             all_patients = DoctorsManagement.all_patients_admin(request, data)
-            reviews_serialized_data = PatientDetailsFprDoctorWithEmailSerializer(all_patients, many=True).data
+            reviews_serialized_data = PatientDetailsWithUserDoctorSerializer(all_patients, many=True).data
             return Response({"result" : "success", "data": reviews_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

@@ -44,6 +44,6 @@ urlpatterns = [
     path(r'delete-hospital-admin/', cancelAppointments.as_view(), name="cancel-given-appointment"),
     path(r'upload-lab-reports/', uploadLabReport.as_view(), name="cancel-given-appointment"),
     path(r'hospital-analytics-graphs/', hospitalAnalyticsGraphs.as_view(), name="hospital-analytics-graphs"),
-    path(r'gender-graphs-fetch/', genderGraphFetch.as_view(), name="gender-graphs-fetch"),
     path(r'age-graphs-fetch/', ageGraphsFetch.as_view(), name="age-graphs-fetch"),
+    path(r'gender-graphs-fetch/', genderGraphFetch.as_view(), name="gender-graphs-fetch"),
 ]

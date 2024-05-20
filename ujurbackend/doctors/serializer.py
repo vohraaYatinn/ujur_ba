@@ -21,7 +21,6 @@ class PatientDetailsFprDoctorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class PatientDetailsFprDoctorWithEmailSerializer(serializers.ModelSerializer):
-    user_email = serializers.CharField()
     class Meta:
         model = Patient
         fields = "__all__"
