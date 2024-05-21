@@ -29,7 +29,20 @@ class PatientManager:
                 if email:
                     user.email = email
                     user.save()
+                latest_patient = Patient.objects.latest('id')
+                latest_ujur_id = latest_patient.ujur_id
+                if latest_ujur_id:
+                    numeric_part = int(latest_ujur_id[4:])
+
+                    # Increment the numeric part
+                    new_numeric_part = numeric_part + 1
+
+                    # Construct the new ujur_id
+                    new_id_to_add = f'UJUR{new_numeric_part}'
+                else:
+                    new_id_to_add = "UJUR101"
                 new_patient = Patient.objects.create(
+                    ujur_id=new_id_to_add,
                     user=user,
                     full_name=full_name,
                     gender=gender,
