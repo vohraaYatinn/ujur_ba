@@ -179,3 +179,17 @@ class PatientManager:
                 return Appointment.objects.filter(patient__id =patient_id, lab_report__isnull=False).select_related('doctor').select_related('doctor__hospital')
         except:
             pass
+
+    @staticmethod
+    def upload_customer_lab_report(request, data):
+        try:
+            patient_id = request.user.id
+            appointment_id = data.get("appointmentId", False)
+            lab_report = data.get("labReport", False)
+            if patient_id and appointment_id and lab_report:
+                req_appointment = Appointment.objects.get(patient__id =patient_id, id=appointment_id)
+                if lab_report:
+                    req_appointment.lab_report = lab_report
+                    req_appointment.save()
+        except:
+            raise Exception("Something went wrong")

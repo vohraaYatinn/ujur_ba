@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from admin_hospital.serializer import HospitalAdminsSerailizer
+from admin_hospital.serializer import HospitalAdminsSerailizer, HospitalReviewsWithPatientsSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAverageUserSerializer, \
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
@@ -10,7 +10,8 @@ from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAve
     PatientDetailsFprDoctorWithEmailSerializer, PatientDetailsWithUserDoctorSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, LabReportsSerializer, \
-    DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer
+    DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer, HospitalWithReviewSerializer, \
+    HospitalSerializerWithRatingDoctors, DoctorModelForHospitalWithDeparmentSerializer
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedHospital, IsAuthenticatedAdminPanel
 import jwt
 
@@ -23,7 +24,7 @@ class HospitalFetchDashboard(APIView):
         try:
             data = request.query_params
             hospital_data = HospitalManager.fetch_dashboard_hospital(data)
-            hospital_serialized_data = HospitalSerializer(hospital_data, many=True).data
+            hospital_serialized_data = HospitalWithReviewSerializer(hospital_data, many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -35,7 +36,7 @@ class HospitalFetchDoco(APIView):
         try:
             data = request.query_params
             hospital_doc_data = HospitalManager.fetch_doctors_hospital_patient({},data)
-            hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
+            hospital_serialized_data = HospitalSerializerWithRatingDoctors(hospital_doc_data).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -85,7 +86,7 @@ class HospitalDoctors(APIView):
             data = request.query_params
             hospital_id['hospitalId'] = request.user.hospital
             hospital_doc_data = HospitalManager.fetch_doctors_hospital(data, hospital_id)
-            hospital_serialized_data = DoctorModelForHospitalSerializer(hospital_doc_data, many=True).data
+            hospital_serialized_data = DoctorModelForHospitalWithDeparmentSerializer(hospital_doc_data, many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -567,6 +568,33 @@ class genderGraphFetch(APIView):
             return Response({"result": "success", "message": "Lab Report Uploaded Successfully", "data":data_check}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+class fetchHospitalSelfReviews(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            reviews = DoctorsManagement.self_hospital_reviews(request, data)
+            reviews_serialized_data = HospitalReviewsWithPatientsSerializer(reviews, many=True).data
+            return Response({"result" : "success", "data": reviews_serialized_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class fetchHospitalGenderAge(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            reviews = DoctorsManagement.get_graph_gender_age(request, data)
+            reviews_age = DoctorsManagement.get_graph_age(request, data)
+            return Response({"result" : "success", "data": reviews, "age":reviews_age}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
 
 class ageGraphsFetch(APIView):
     permission_classes = [IsAuthenticatedHospital]

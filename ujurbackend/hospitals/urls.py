@@ -5,7 +5,8 @@ from hospitals.views import HospitalFetchDashboard, HospitalFetchDoco, FetchLabR
     FetchHospitalDepartments, FetchHospitalReviews, FetchPatientsHospitals, AddPatientsHospitals, \
     FetchHospitalAppointments, GetSoftwareDepartments, AddDepartmentsHospitals, HandleDeleteHospital, HandleDoctors, \
     HandleDepartments, HospitalDoctorReviews, HandleHospitalAdmins, handleHospitalMedicines, handleReferToMedicines, \
-    cancelAppointments, HospitalEditDoctors, uploadLabReport, hospitalAnalyticsGraphs, genderGraphFetch, ageGraphsFetch
+    cancelAppointments, HospitalEditDoctors, uploadLabReport, hospitalAnalyticsGraphs, genderGraphFetch, ageGraphsFetch, \
+    fetchHospitalSelfReviews, fetchHospitalGenderAge
 
 urlpatterns = [
     path(r'dashboard-hospitals/', HospitalFetchDashboard.as_view(), name="dashboard-hospitals"),
@@ -46,4 +47,6 @@ urlpatterns = [
     path(r'hospital-analytics-graphs/', hospitalAnalyticsGraphs.as_view(), name="hospital-analytics-graphs"),
     path(r'age-graphs-fetch/', ageGraphsFetch.as_view(), name="age-graphs-fetch"),
     path(r'gender-graphs-fetch/', genderGraphFetch.as_view(), name="gender-graphs-fetch"),
+    path(r'fetch-self-hospital-reviews/', fetchHospitalSelfReviews.as_view(), name="fetch-self-hospital-reviews"),
+    path(r'fetch-patients-by-age-gender/', fetchHospitalGenderAge.as_view(), name="fetch-patients-by-age-gender"),
 ]

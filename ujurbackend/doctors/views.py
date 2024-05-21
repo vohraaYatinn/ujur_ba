@@ -10,6 +10,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
     checkReviewSerializer, checkHospitalReviewSerializer
 from hospitals.manager import HospitalManager
+from hospitals.serializer import DepartmentSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -538,12 +539,26 @@ class writeReviewHospital(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
+class fetchDepartmentHospital(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            departments = DoctorsManagement.change_appointment_status_to_queue(request, data)
+            return Response({"result": "success", "message": "Appointment Added to queue Successfully"}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
+
+class QueuePatientAppointment(APIView):
+    permission_classes = [IsDoctorAuthenticated]
     @staticmethod
     def get(request):
         try:
             data = request.query_params
-            check_reviews = DoctorsManagement.check_reviews_patient_hospital(request, data)
-            review_data = checkHospitalReviewSerializer(check_reviews).data
-            return Response({ "result": "success", "data": review_data }, 200)
+            departments = DoctorsManagement.change_appointment_status(request, data)
+            review_data = DepartmentSerializer(departments, many=True).data
+            return Response({"result": "success", "data": review_data}, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)

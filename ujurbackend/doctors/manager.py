@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 from django.db.models import F
+from django.utils.timezone import now, timedelta
+
 
 from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName
 from patients.models import Patient
@@ -69,6 +71,7 @@ class DoctorsManagement:
             fav_doc = FavDoctors.objects.filter(
                 patient_id=patient_id
             ).select_related("doctor")
+
             return fav_doc
         else:
             raise Exception("There is Something missing in the form, Please Try again")
@@ -149,6 +152,28 @@ class DoctorsManagement:
         reviews = PatientDoctorReviews.objects.filter(
             doctor__hospital_id=request.user.hospital
         ).select_related("doctor").select_related("patient")
+        return reviews
+
+    @staticmethod
+    def self_hospital_reviews(request, data):
+        patient_name = data.get("patientName", False)
+        filters = Q(hospital_id=request.user.hospital)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains=patient_name)
+        reviews = HospitalPatientReviews.objects.filter(filters
+
+        ).select_related("hospital").select_related("patient")
+        return reviews
+
+    @staticmethod
+    def self_graph_gender_and_age(request, data):
+        patient_name = data.get("patientName", False)
+        filters = Q(hospital_id=request.user.hospital)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains=patient_name)
+        reviews = HospitalPatientReviews.objects.filter(filters
+
+        ).select_related("hospital").select_related("patient")
         return reviews
 
     @staticmethod
@@ -537,8 +562,8 @@ class DoctorsManagement:
         if not date:
             raise Exception("Not Date Provided")
         filters &= Q(date_appointment__date = date)
-        total_appointments = Appointment.objects.filter(
-            filters
+        pending_appointments_status = Appointment.objects.filter(
+            filters & Q(status="queue")
         ).select_related("patient").order_by("-created_at")
         pending_appointments = Appointment.objects.filter(
             filters & Q(status="pending")
@@ -551,8 +576,8 @@ class DoctorsManagement:
         ).select_related("patient").order_by("date_appointment")
 
         return {
-            'total_appointments': total_appointments,
-            'pending_appointments': pending_appointments,
+            'total_appointments': pending_appointments,
+            'pending_appointments': pending_appointments_status,
             'canceled_appointments': canceled_appointments,
             'completed_appointments': completed_appointments,
         }
@@ -1126,5 +1151,181 @@ class DoctorsManagement:
                 return get_old_review[0]
             return []
 
+        else:
+            raise Exception("Something went Wrong")
+    @staticmethod
+    def fetch_hospital_department(request, data):
+        try:
+            req_doctor = doctorDetails.objects.get(id=request.user.doctor)
+            departments_id_tuples = DepartmentHospitalMapping.objects.filter(hospital_id=req_doctor.hospital).values_list("department")
+            if departments_id_tuples:
+                departments_id = [dept[0] for dept in departments_id_tuples]
+                department_names = Department.objects.filter(id__in = list(departments_id))
+            return department_names
+        except Exception as e:
+            raise Exception("Something went Wrong")
+
+    @staticmethod
+    def get_graph_gender_age(request, data):
+        timeframe = data.get("time")
+        today = now().date()
+        male_data = []
+        female_data = []
+
+        if timeframe == 'Week':
+            # Get the Monday of the current week
+            start_date = today - timedelta(days=today.weekday())
+            date_range = [start_date + timedelta(days=i) for i in range(7)]
+            for start in date_range:
+                end = start  # Each day in the week
+                male_count = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    patient__gender='M',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                female_count = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    patient__gender='F',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                male_data.append(male_count)
+                female_data.append(female_count)
+
+        elif timeframe == 'Month':
+            start_date = today.replace(day=1)
+            date_range = [
+                (start_date + timedelta(days=0), start_date + timedelta(days=6)),
+                (start_date + timedelta(days=7), start_date + timedelta(days=13)),
+                (start_date + timedelta(days=14), start_date + timedelta(days=20)),
+                (start_date + timedelta(days=21), start_date + timedelta(days=27))
+            ]
+
+            for start, end in date_range:
+                male_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__gender='M',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+
+                female_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__gender='F',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+
+                male_data.append(male_count)
+                female_data.append(female_count)
+
+        elif timeframe == 'Year':
+            start_date = today.replace(month=1, day=1)
+            date_range = [(start_date.replace(month=i + 1),
+                           (start_date.replace(month=i + 2) - timedelta(days=1)) if i < 11 else start_date.replace(
+                               year=start_date.year + 1, month=1, day=1) - timedelta(days=1)) for i in range(12)]
+            for start, end in date_range:
+                male_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__gender='M',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                female_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__gender='F',
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                male_data.append(male_count)
+                female_data.append(female_count)
+
+        return {"male_data": male_data, "female_data": female_data}
+
+
+    @staticmethod
+    def get_graph_age(request, data):
+        timeframe = data.get("age")
+        today = now().date()
+        age_append_list = []
+        seventeen = today.replace(year=today.year - 17) + timedelta(days=1)
+        thirtyfive = today.replace(year=today.year - 35) + timedelta(days=1)
+        fifty = today.replace(year=today.year - 50) + timedelta(days=1)
+        sixtyfive = today.replace(year=today.year - 65) + timedelta(days=1)
+        eighty = today.replace(year=today.year - 80) + timedelta(days=1)
+        hundred = today.replace(year=today.year - 100) + timedelta(days=1)
+        if timeframe == 'Week':
+            start_date = today
+            end_date = start_date + timedelta(days=7)
+        elif timeframe == 'Month':
+            start_date = today
+            end_date = start_date + timedelta(days=30)
+        elif timeframe == 'Year':
+            start_date = today
+            end_date = start_date + timedelta(days=364)
+        firstPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=seventeen,
+            doctor__hospital_id=request.user.hospital
+        ).count()
+        secondPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=thirtyfive,
+            patient__date_of_birth__lt=seventeen,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        thirdPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=fifty,
+            patient__date_of_birth__lt=thirtyfive,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        forthPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=sixtyfive,
+            patient__date_of_birth__lt=fifty,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        fifthPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=eighty,
+            patient__date_of_birth__lt=sixtyfive,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        sixthPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__gt=hundred,
+            patient__date_of_birth__lt=eighty,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        seventhPhase = Appointment.objects.filter(
+            date_appointment__date__range=(start_date, end_date),
+            patient__date_of_birth__lt=hundred,
+            doctor__hospital_id=request.user.hospital
+
+        ).count()
+        age_append_list.append(firstPhase)
+        age_append_list.append(secondPhase)
+        age_append_list.append(thirdPhase)
+        age_append_list.append(forthPhase)
+        age_append_list.append(fifthPhase)
+        age_append_list.append(sixthPhase)
+        age_append_list.append(seventhPhase)
+        return age_append_list
+
+
+    @staticmethod
+    def change_appointment_status_to_queue(request, data):
+        appointmentId = data.get("appointmentId")
+        if appointmentId:
+            appointment_old = Appointment.objects.get(id=appointmentId)
+            appointment_old.status = "queue"
+            appointment_old.save()
         else:
             raise Exception("Something went Wrong")

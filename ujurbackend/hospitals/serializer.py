@@ -12,7 +12,15 @@ class DoctorModelForHospitalSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
 class HospitalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HospitalDetails
+        fields = "__all__"
+
+class HospitalWithReviewSerializer(serializers.ModelSerializer):
+    average_review_stars = serializers.FloatField()
+    total_review_stars = serializers.IntegerField()
     class Meta:
         model = HospitalDetails
         fields = "__all__"
@@ -20,6 +28,14 @@ class HospitalSerializer(serializers.ModelSerializer):
 
 class HospitalSerializerWithDoctors(serializers.ModelSerializer):
     hospital_doctors = DoctorModelForHospitalSerializer(many=True)
+    class Meta:
+        model = HospitalDetails
+        fields = "__all__"
+
+class HospitalSerializerWithRatingDoctors(serializers.ModelSerializer):
+    hospital_doctors = DoctorModelForHospitalSerializer(many=True)
+    average_review_stars = serializers.FloatField()
+    total_review_stars = serializers.IntegerField()
     class Meta:
         model = HospitalDetails
         fields = "__all__"
@@ -50,3 +66,10 @@ class DepartmentMappingSerializer(serializers.ModelSerializer):
         model = DepartmentHospitalMapping
         fields = "__all__"
 
+
+class DoctorModelForHospitalWithDeparmentSerializer(serializers.ModelSerializer):
+    department = DepartmentSerializer()
+
+    class Meta:
+        model = doctorDetails
+        fields = "__all__"

@@ -1,4 +1,4 @@
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
@@ -13,7 +13,10 @@ from datetime import datetime, timedelta
 class HospitalManager:
     @staticmethod
     def fetch_dashboard_hospital(data):
-        return HospitalDetails.objects.filter()[:int(data.get("pageNumber"))]
+        return HospitalDetails.objects.filter().annotate(
+    average_review_stars=Avg('hospital_reviews__reviews_star'),
+            total_review_stars=Count('hospital_reviews__id')
+)[:int(data.get("pageNumber"))]
 
     @staticmethod
     def fetch_doctors_hospital(dataReq, data):
@@ -24,7 +27,7 @@ class HospitalManager:
             filters &= Q(full_name__icontains = doctor_name)
         if department:
             filters &= Q(department=department)
-        return doctorDetails.objects.filter(filters)
+        return doctorDetails.objects.filter(filters).select_related("department")
 
 
     @staticmethod
@@ -241,7 +244,10 @@ class HospitalManager:
     @staticmethod
     def fetch_doctors_hospital_patient(dataReq, data):
         filters = Q(id=data.get("hospitalId"))
-        return HospitalDetails.objects.get(filters)
+        return HospitalDetails.objects.filter(filters).annotate(
+    average_review_stars=Avg('hospital_reviews__reviews_star'),
+            total_review_stars=Count('hospital_reviews__id')
+)[0]
 
 
     @staticmethod

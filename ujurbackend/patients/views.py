@@ -147,3 +147,16 @@ class fetchLabReports(APIView):
             return Response({"result" : "success", "message": "Profile Changed Successfully", "data":personal_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class uploadCustomerLabReport(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            user_change = PatientManager.upload_customer_lab_report(request, data)
+            return Response({"result" : "success", "message": "Lab Report Uploaded Successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
