@@ -156,10 +156,11 @@ class DoctorsManagement:
 
     @staticmethod
     def self_hospital_reviews(request, data):
-        patient_name = data.get("patientName", False)
+        star_review = data.get("starSearch", False)
         filters = Q(hospital_id=request.user.hospital)
-        if patient_name:
-            filters &= Q(patient__full_name__icontains=patient_name)
+
+        if star_review:
+            filters &= Q(reviews_star=star_review)
         reviews = HospitalPatientReviews.objects.filter(filters
 
         ).select_related("hospital").select_related("patient")
@@ -835,21 +836,29 @@ class DoctorsManagement:
         license = data.get("license", None)
         if hospital_id:
             user = UsersDetails.objects.create(email=email,phone=phone)
-            doctor_obj = doctorDetails.objects.create(
-                user = user,
-                email = email,
-                password = "demo@123",
-                full_name = full_name,
-                bio =bio,
-                department_id=department,
-                education=education,
-                address=address,
-                experience=experience,
-                profile_picture=profilePhoto,
-                hospital_id=hospital_id,
-                specialization=specialization
-            )
-            doctor_slots = doctorSlots.objects.create(
+            slots = False
+            if morningTime and morningSlots and morningPrice:
+                slots = True
+            elif afternoonTime and afternoonSlots and afternoonPrice:
+                slots = True
+            elif eveningTime and eveningSlots and eveningPrice:
+                slots = True
+            if slots:
+                doctor_obj = doctorDetails.objects.create(
+                    user=user,
+                    email=email,
+                    password="demo@123",
+                    full_name=full_name,
+                    bio=bio,
+                    department_id=department,
+                    education=education,
+                    address=address,
+                    experience=experience,
+                    profile_picture=profilePhoto,
+                    hospital_id=hospital_id,
+                    specialization=specialization
+                )
+                doctorSlots.objects.create(
                 doctor=doctor_obj,
                 medical_license=license,
                 morning_timings=morningTime,
@@ -860,11 +869,12 @@ class DoctorsManagement:
                 evening_slots=eveningSlots,
                 morning_slots_price=morningPrice,
                 afternoon_slots_price=afternoonPrice,
-                evening_slots_price=eveningPrice,
+                evening_slots_price=eveningPrice
+                )
+                return doctor_obj
+            else:
+                raise Exception("Slots, Timings and Price is Mandatory")
 
-            )
-
-        return doctor_obj
     @staticmethod
     def add_new_admin_doctor_hospital(request, data):
         hospital_admin_id = data.get("HospitalsId", False)
@@ -1057,6 +1067,8 @@ class DoctorsManagement:
         doctor_name = data.get('doctorName', False)
         hospitals = data.get('hospitalSearch', False)
         department = data.get('department', False)
+        star_review = data.get('starSearch', False)
+
         filters = Q(doctor__hospital_id=request.user.hospital)
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
@@ -1064,8 +1076,8 @@ class DoctorsManagement:
             filters &= Q(doctor__full_name__icontains = doctor_name)
         if hospitals:
             filters &= Q(doctor__hospital=hospitals)
-        if department:
-            filters &= Q(doctor__department=department)
+        if star_review:
+            filters &= Q(reviews_star=star_review)
         return PatientDoctorReviews.objects.filter(filters).select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")
 
 

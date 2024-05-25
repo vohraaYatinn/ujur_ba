@@ -227,6 +227,8 @@ class HospitalManager:
                 name = medicines_name,
                 description = medicines_description
             )
+        else:
+            raise Exception("No Data is provided")
     @staticmethod
     def fetch_refer_to_hospital(request, data):
         return ReferToDoctors.objects.filter(hospital=request.user.hospital)
