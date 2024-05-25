@@ -539,7 +539,7 @@ class writeReviewHospital(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
-class fetchDepartmentHospital(APIView):
+class QueuePatientAppointment(APIView):
     permission_classes = [IsDoctorAuthenticated]
     @staticmethod
     def post(request):
@@ -551,14 +551,15 @@ class fetchDepartmentHospital(APIView):
             return Response({"result": "failure", "message": str(e)}, 500)
 
 
-class QueuePatientAppointment(APIView):
+class fetchDepartmentHospital(APIView):
     permission_classes = [IsDoctorAuthenticated]
     @staticmethod
     def get(request):
         try:
             data = request.query_params
-            departments = DoctorsManagement.change_appointment_status(request, data)
+            departments = DoctorsManagement.fetch_hospital_department(request, data)
             review_data = DepartmentSerializer(departments, many=True).data
             return Response({"result": "success", "data": review_data}, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
+

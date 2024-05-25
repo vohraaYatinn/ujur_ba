@@ -39,7 +39,7 @@ class HospitalAdmin(models.Model):
 
 class Department(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True,  null=True)
 
     class Meta:
         managed = True
@@ -71,7 +71,7 @@ class LabReports(models.Model):
 class MedicinesName(models.Model):
     hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = True

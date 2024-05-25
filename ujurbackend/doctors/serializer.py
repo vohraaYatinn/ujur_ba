@@ -83,6 +83,8 @@ class DoctorAverageUserSerializer(serializers.ModelSerializer):
     total_reviews = serializers.IntegerField()
     doctor_slots = DocotrSlotsSerializer(many=True)
     doctor_reviews = DoctorReviewsWithPatientsSerializer(many=True)
+    department = DepartmentSerializer()
+    hospital = HospitalSerializer()
     class Meta:
         model = doctorDetails
         fields = "__all__"

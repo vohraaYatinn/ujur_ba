@@ -5,7 +5,7 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     fetchDoctorOwnProfile, doctorChangePassword, dashboardDetails, dashboardPatientsDetails, dashboarDoctorReviews, \
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
     ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines, writeReview, \
-    writeReviewHospital, fetchDepartmentHospital
+    writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -48,7 +48,7 @@ urlpatterns = [
     path(r'add-reviews-hospital/', writeReviewHospital.as_view(), name="add-reviews-hospital"),
     path(r'fetch-reviews-hospital/', writeReviewHospital.as_view(), name="fetch-reviews-hospital"),
     path(r'fetch-department-hospital/', fetchDepartmentHospital.as_view(), name="fetch-department-hospital"),
-    path(r'change-status-to-queue/', fetchDepartmentHospital.as_view(), name="change-status-to-queue"),
+    path(r'change-status-to-queue/', QueuePatientAppointment.as_view(), name="change-status-to-queue"),
 
 
 ]

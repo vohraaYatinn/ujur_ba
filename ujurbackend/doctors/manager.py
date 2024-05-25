@@ -634,9 +634,12 @@ class DoctorsManagement:
     @staticmethod
     def doctor_fetch_reviews(request, data):
         filters = Q(doctor_id=request.user.doctor)
-        patient_name = data.get("patientName")
-        if patient_name:
-            filters &= Q(patient__full_name__icontains = patient_name)
+        star_search = data.get("starSearch", False)
+        date = data.get("date", False)
+        if star_search:
+            filters &= Q(reviews_star = star_search)
+        if date:
+            filters &= Q(created_at__date = date)
         reviews_objs = PatientDoctorReviews.objects.filter(
             filters).select_related("patient")
         # Initialize counts for each star rating
@@ -645,10 +648,14 @@ class DoctorsManagement:
         for rating_count in reviews_objs:
             star_counts[rating_count.reviews_star] = star_counts[rating_count.reviews_star] + 1
             total_sum = total_sum + rating_count.reviews_star
+        if total_sum:
+            total_sum = round(total_sum / len(reviews_objs),2)
+        else:
+            total_sum = 0
 
         return {
             "star_counts": star_counts,
-            "average_rating": round(total_sum / len(reviews_objs),2),
+            "average_rating": total_sum,
             "reviews_objs": reviews_objs
         }
 
@@ -673,7 +680,7 @@ class DoctorsManagement:
             doctor_obj = doctorDetails.objects.filter(id=doctor_id).annotate(
                 avg_reviews=Round(Avg("doctor_reviews__reviews_star"),1),
                 total_reviews=Count("doctor_reviews__id")
-            ).prefetch_related("doctor_slots").prefetch_related("doctor_reviews").select_related('user')
+            ).prefetch_related("doctor_slots").prefetch_related("doctor_reviews").select_related('user').select_related("department").select_related("hospital")
         return doctor_obj[0]
 
     @staticmethod
@@ -1018,8 +1025,8 @@ class DoctorsManagement:
     @staticmethod
     def add_hospital_admin(request, data):
         department_name = data.get("departmentName")
-        department_description = data.get("departmentComments")
-        if department_name and department_description:
+        department_description = data.get("departmentComments", None)
+        if department_name:
             Department.objects.create(
                 name=department_name,
                 description=department_description
@@ -1090,8 +1097,8 @@ class DoctorsManagement:
     def add_medicines_doctor(request, data):
         doctor_details = doctorDetails.objects.get(id=request.user.doctor)
         medicines_name = data.get("name")
-        medicines_description = data.get("description")
-        if medicines_name and medicines_description:
+        medicines_description = data.get("description", None)
+        if medicines_name:
             return MedicinesName.objects.create(
                 hospital=doctor_details.hospital,
                 name = medicines_name,
