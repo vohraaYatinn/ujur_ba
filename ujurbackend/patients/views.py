@@ -6,7 +6,10 @@ from doctors.serializer import DoctorReviewsWithPatientsAndDoctorSerializer, \
 from patients.manager import PatientManager
 from rest_framework.response import Response
 import jwt
-from patients.serializer import AppointmentSerializer, PatientDetailsSerializer
+
+from patients.models import Patient
+from patients.serializer import AppointmentSerializer, PatientDetailsSerializer, PatientSerializer
+
 
 class patientSignup(APIView):
     @staticmethod
@@ -32,6 +35,7 @@ class changeJwt(APIView):
     def post(request):
         try:
             patientId = request.data.get("patientId")
+
             token = request.headers.get("jwtToken")
             decoded_token = jwt.decode(token, "secretKeyRight34", algorithms=['HS256'])
 
@@ -40,8 +44,10 @@ class changeJwt(APIView):
                     'phone_number': decoded_token.get("phone_number"),
                     'patient': patientId
                 }
+                get_patient = Patient.objects.get(id=patientId)
+                patient_details = PatientSerializer(get_patient).data
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
-            return Response({"result" : "success", "message": "Your profile has been made successfully", "token":token}, 200)
+            return Response({"result" : "success", "message": "Your profile has been made successfully", "token":token, "patient":patient_details}, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 

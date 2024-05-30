@@ -400,9 +400,9 @@ class HandleDoctors(APIView):
         try:
             data = request.query_params
             hospital_id = request.user.hospital
-            doctor = HospitalManager.fetch_all_doctors_hospital(hospital_id)
-            hospital_serialized_data = HospitalSerializerWithDoctors(doctor).data
-            return Response({"result" : "success", "data": hospital_serialized_data['hospital_doctors']}, 200)
+            doctor = HospitalManager.fetch_each_doctors_hospital(hospital_id)
+            hospital_serialized_data = DoctorModelForHospitalWithDeparmentSerializer(doctor, many=True).data
+            return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -592,6 +592,18 @@ class fetchHospitalGenderAge(APIView):
             reviews = DoctorsManagement.get_graph_gender_age(request, data)
             reviews_age = DoctorsManagement.get_graph_age(request, data)
             return Response({"result" : "success", "data": reviews, "age":reviews_age}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class completeDoctorGraph(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            completed_count = DoctorsManagement.get_completed_appointment_graph(request, data)
+            return Response({"result" : "success", "data": completed_count}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

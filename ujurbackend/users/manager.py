@@ -1,4 +1,7 @@
 import random
+
+from django.db.models import Q
+
 from common_constants import CommonConstants
 from users.models import otpPhone, UsersDetails
 
@@ -23,7 +26,10 @@ class UserManager:
     def phone_otp_verify(data):
         email = data.get('email', False)
         password = data.get("password", False)
-        check_if_user_exist = UsersDetails.objects.filter(email=email,password=password)
+        filters = Q()
+        filters &= Q(email=email) | Q(user_patient_table__ujur_id=email)
+        filters &= Q(password=password)
+        check_if_user_exist = UsersDetails.objects.filter(filters)
         if check_if_user_exist:
             return "user exists"
         return False

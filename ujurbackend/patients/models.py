@@ -23,7 +23,7 @@ class Patient(models.Model):
     profile_picture = models.ImageField(upload_to='patient/', blank=True, null=True)
     ujur_id = models.CharField(max_length=200, null=True)
     full_name = models.CharField(max_length=200, null=True)
-    user = models.ForeignKey(UsersDetails, on_delete=models.CASCADE)
+    user = models.ForeignKey(UsersDetails, on_delete=models.CASCADE, related_name="user_patient_table")
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     date_of_birth = models.DateField()
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, null=True)
@@ -33,7 +33,7 @@ class Patient(models.Model):
     district = models.CharField(max_length=100)
     block = models.CharField(max_length=100)
     created_at = models.DateTimeField(default=timezone.now)
-    created_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='patient_who_created_created_by')
+    created_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, related_name='patient_who_created_created_by', blank=True)
 
 
     class Meta:

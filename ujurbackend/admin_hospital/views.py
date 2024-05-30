@@ -12,7 +12,8 @@ from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
     DoctorReviewsWithPatientsAndDoctorSerializer
 from hospitals.manager import HospitalManager
-from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors
+from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, HospitalWithAccountSerializer, \
+    HospitalSerializerWithDoctorsAndAccount
 
 
 class MainAdminLogin(APIView):
@@ -65,7 +66,7 @@ class FetchAllHospital(APIView):
         try:
             data = request.query_params
             hospital_data = HospitalManager.fetch_all_admin_hospital(data)
-            hospital_serialized_data = HospitalSerializer(hospital_data, many=True).data
+            hospital_serialized_data = HospitalWithAccountSerializer(hospital_data, many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -80,7 +81,7 @@ class FetchHospitalDetails(APIView):
             data=request.query_params
             hospital_id = data.get('hospitalId', False)
             hospital_doc_data, review = HospitalManager.fetch_all_doctors_hospital(hospital_id)
-            hospital_serialized_data = HospitalSerializerWithDoctors(hospital_doc_data).data
+            hospital_serialized_data = HospitalSerializerWithDoctorsAndAccount(hospital_doc_data).data
             review_serialized_data = DoctorReviewsWithPatientsAndDoctorSerializer(review, many=True).data
             return Response({"result" : "success", "data": hospital_serialized_data, "reviews":review_serialized_data}, 200)
         except Exception as e:
@@ -330,5 +331,18 @@ class fetchAllReviewsHospital(APIView):
             seralizer_data = HospitalReviewsWithPatientsSerializer(reviews,many=True).data
             return Response(
                 {"result": "success", "data": seralizer_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class completedDoctorGraph(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            req_data = HospitalManager.fetch_completed_doctor_graph(data)
+            return Response(
+                {"result": "success", "data": req_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

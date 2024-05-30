@@ -40,6 +40,7 @@ class AdminMainManagement:
             if type == "doctor":
                 return doctorDetails.objects.get(id=id).delete()
             elif type == "hospital":
+                HospitalAdmin.objects.get(hospital_id=id).delete()
                 return HospitalDetails.objects.get(id=id).delete()
         else:
             raise Exception("Something is missing in the form")

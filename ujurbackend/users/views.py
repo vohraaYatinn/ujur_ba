@@ -1,7 +1,9 @@
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from patients.models import Patient
+from patients.serializer import PatientSerializer
 from users.manager import UserManager
 import jwt
 
@@ -27,13 +29,17 @@ class PhoneOtpVerify(APIView):
             token = False
             if user_exist == "user exists":
                 email = data.get('email', False)
-                patient = Patient.objects.get(user__email = email,created_by=None)
+                filters = Q()
+                filters &= Q(user__email=email) | Q(ujur_id=email)
+                filters &= Q(created_by=None)
+                patient = Patient.objects.get(filters)
+                patient_data = PatientSerializer(patient).data
                 payload = {
                     'patient': patient.id
                 }
                 token = jwt.encode(payload, 'secretKeyRight34', algorithm='HS256')
 
-                return Response({"result" : "success", "userType":user_exist, "token":token}, 200)
+                return Response({"result" : "success", "userType":user_exist, "token":token, "patient":patient_data}, 200)
             else:
                 return Response({"result" : "failure", "message":"Invalid Username or Password"}, 200)
         except Exception as err:

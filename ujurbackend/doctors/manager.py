@@ -11,7 +11,7 @@ from django.db.models import F
 from django.utils.timezone import now, timedelta
 
 
-from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName
+from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName, HospitalAdmin
 from patients.models import Patient
 from users.models import UsersDetails
 
@@ -19,7 +19,7 @@ from users.models import UsersDetails
 class DoctorsManagement:
     @staticmethod
     def fetch_dashboard_doctor(data):
-        return doctorDetails.objects.filter().annotate(
+        return doctorDetails.objects.filter(is_active=True).annotate(
                 avg_reviews=Round(Avg("doctor_reviews__reviews_star"),1),
                 total_reviews=Count("doctor_reviews__id")
             ).prefetch_related("doctor_slots")[:int(data.get("pageNumber"))]
@@ -395,7 +395,7 @@ class DoctorsManagement:
     def login_doctor(request, data):
         email = data.get("email")
         password = data.get("password")
-        check_doctor = doctorDetails.objects.filter(email=email, password=password).select_related("hospital")
+        check_doctor = doctorDetails.objects.filter(ujur_id=email, password=password).select_related("hospital")
         if check_doctor.exists():
             return check_doctor[0]
         return False
@@ -900,9 +900,25 @@ class DoctorsManagement:
         eveningTime = data.get("eveningTime", None)
         afternoonTime = data.get("afternoonTime", None)
         license = data.get("license", None)
+        hospital_details = HospitalAdmin.objects.get(hospital_id=hospital_id)
         if hospital_id:
+            try:
+                latest_hospital_admin = doctorDetails.objects.latest('id')
+                latest_ujur_id = latest_hospital_admin.ujur_id
+            except doctorDetails.DoesNotExist:
+                new_id_to_add = hospital_details.ujur_id + "D1"
+            if latest_ujur_id:
+                reversed_s = latest_ujur_id[::-1]
+                d_index = reversed_s.index('D')
+                number_reversed = reversed_s[:d_index]
+                number = int(number_reversed[::-1])
+                number += 1
+                new_id_to_add = hospital_details.ujur_id + "D" + str(number)
+            else:
+                new_id_to_add = hospital_details.ujur_id + "D1"
             user = UsersDetails.objects.create(email=email,phone=phone)
             doctor_obj = doctorDetails.objects.create(
+                ujur_id=new_id_to_add,
                 user = user,
                 email = email,
                 password = "demo@123",
@@ -1215,10 +1231,10 @@ class DoctorsManagement:
         elif timeframe == 'Month':
             start_date = today.replace(day=1)
             date_range = [
-                (start_date + timedelta(days=0), start_date + timedelta(days=6)),
-                (start_date + timedelta(days=7), start_date + timedelta(days=13)),
-                (start_date + timedelta(days=14), start_date + timedelta(days=20)),
-                (start_date + timedelta(days=21), start_date + timedelta(days=27))
+                (start_date + timedelta(days=0), start_date + timedelta(days=7)),
+                (start_date + timedelta(days=8), start_date + timedelta(days=15)),
+                (start_date + timedelta(days=16), start_date + timedelta(days=23)),
+                (start_date + timedelta(days=23), start_date + timedelta(days=30))
             ]
 
             for start, end in date_range:
@@ -1263,80 +1279,107 @@ class DoctorsManagement:
         return {"male_data": male_data, "female_data": female_data}
 
 
+
     @staticmethod
     def get_graph_age(request, data):
         timeframe = data.get("age")
         today = now().date()
-        age_append_list = []
-        seventeen = today.replace(year=today.year - 17) + timedelta(days=1)
-        thirtyfive = today.replace(year=today.year - 35) + timedelta(days=1)
-        fifty = today.replace(year=today.year - 50) + timedelta(days=1)
-        sixtyfive = today.replace(year=today.year - 65) + timedelta(days=1)
-        eighty = today.replace(year=today.year - 80) + timedelta(days=1)
-        hundred = today.replace(year=today.year - 100) + timedelta(days=1)
+        age_append_list_1st = []
+        age_append_list_2nd = []
+        age_append_list_3rd = []
+        list_to_send = []
+        seventeen = today.replace(year=today.year - 15) + timedelta(days=1)
+        fifty = today.replace(year=today.year - 60) + timedelta(days=1)
         if timeframe == 'Week':
-            start_date = today
-            end_date = start_date + timedelta(days=7)
+            start_date = today - timedelta(days=today.weekday())
+            date_range = [start_date + timedelta(days=i) for i in range(7)]
+            for start in date_range:
+                firstPhase = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    patient__date_of_birth__gt=seventeen,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                secondPhase = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    patient__date_of_birth__gt=fifty,
+                    patient__date_of_birth__lt=seventeen,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                thirdPhase = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    patient__date_of_birth__lt=fifty,
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                age_append_list_1st.append(firstPhase)
+                age_append_list_2nd.append(secondPhase)
+                age_append_list_3rd.append(thirdPhase)
+
         elif timeframe == 'Month':
-            start_date = today
-            end_date = start_date + timedelta(days=30)
+            start_date = today.replace(day=1)
+            date_range = [
+                (start_date + timedelta(days=0), start_date + timedelta(days=7)),
+                (start_date + timedelta(days=8), start_date + timedelta(days=15)),
+                (start_date + timedelta(days=16), start_date + timedelta(days=23)),
+                (start_date + timedelta(days=23), start_date + timedelta(days=30))
+            ]
+
+            for start, end in date_range:
+                firstPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__gt=seventeen,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                secondPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__gt=fifty,
+                    patient__date_of_birth__lt=seventeen,
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                thirdPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__lt=fifty,
+                    doctor__hospital_id=request.user.hospital
+
+                ).count()
+                age_append_list_1st.append(firstPhase)
+                age_append_list_2nd.append(secondPhase)
+                age_append_list_3rd.append(thirdPhase)
         elif timeframe == 'Year':
-            start_date = today
-            end_date = start_date + timedelta(days=364)
-        firstPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=seventeen,
-            doctor__hospital_id=request.user.hospital
-        ).count()
-        secondPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=thirtyfive,
-            patient__date_of_birth__lt=seventeen,
-            doctor__hospital_id=request.user.hospital
+            start_date = today.replace(month=1, day=1)
+            date_range = [(start_date.replace(month=i + 1),
+                           (start_date.replace(month=i + 2) - timedelta(days=1)) if i < 11 else start_date.replace(
+                               year=start_date.year + 1, month=1, day=1) - timedelta(days=1)) for i in range(12)]
+            for start, end in date_range:
+                firstPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__gt=seventeen,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                secondPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__gt=fifty,
+                    patient__date_of_birth__lt=seventeen,
+                    doctor__hospital_id=request.user.hospital
 
-        ).count()
-        thirdPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=fifty,
-            patient__date_of_birth__lt=thirtyfive,
-            doctor__hospital_id=request.user.hospital
+                ).count()
+                thirdPhase = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    patient__date_of_birth__lt=fifty,
+                    doctor__hospital_id=request.user.hospital
 
-        ).count()
-        forthPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=sixtyfive,
-            patient__date_of_birth__lt=fifty,
-            doctor__hospital_id=request.user.hospital
+                ).count()
+                age_append_list_1st.append(firstPhase)
+                age_append_list_2nd.append(secondPhase)
+                age_append_list_3rd.append(thirdPhase)
 
-        ).count()
-        fifthPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=eighty,
-            patient__date_of_birth__lt=sixtyfive,
-            doctor__hospital_id=request.user.hospital
+        return {
+            "before_16": age_append_list_1st,
+            "fifteen_60": age_append_list_2nd,
+            "after_60": age_append_list_3rd,
 
-        ).count()
-        sixthPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__gt=hundred,
-            patient__date_of_birth__lt=eighty,
-            doctor__hospital_id=request.user.hospital
-
-        ).count()
-        seventhPhase = Appointment.objects.filter(
-            date_appointment__date__range=(start_date, end_date),
-            patient__date_of_birth__lt=hundred,
-            doctor__hospital_id=request.user.hospital
-
-        ).count()
-        age_append_list.append(firstPhase)
-        age_append_list.append(secondPhase)
-        age_append_list.append(thirdPhase)
-        age_append_list.append(forthPhase)
-        age_append_list.append(fifthPhase)
-        age_append_list.append(sixthPhase)
-        age_append_list.append(seventhPhase)
-        return age_append_list
+        }
 
 
     @staticmethod
@@ -1348,3 +1391,59 @@ class DoctorsManagement:
             appointment_old.save()
         else:
             raise Exception("Something went Wrong")
+
+
+    @staticmethod
+    def get_completed_appointment_graph(request, data):
+        doctor_id = data.get("doctorId")
+        timeframe = data.get("time")
+        today = now().date()
+        completed_count = []
+        female_data = []
+
+        if timeframe == 'week':
+            # Get the Monday of the current week
+            start_date = today - timedelta(days=today.weekday())
+            date_range = [start_date + timedelta(days=i) for i in range(7)]
+            for start in date_range:
+                end = start  # Each day in the week
+                male_count = Appointment.objects.filter(
+                    date_appointment__date=start,
+                    doctor_id=doctor_id,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                completed_count.append(male_count)
+
+        elif timeframe == 'month':
+            start_date = today.replace(day=1)
+            date_range = [
+                (start_date + timedelta(days=0), start_date + timedelta(days=6)),
+                (start_date + timedelta(days=7), start_date + timedelta(days=13)),
+                (start_date + timedelta(days=14), start_date + timedelta(days=20)),
+                (start_date + timedelta(days=21), start_date + timedelta(days=27))
+            ]
+
+            for start, end in date_range:
+                male_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    doctor_id=doctor_id,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+
+
+                completed_count.append(male_count)
+
+        elif timeframe == 'year':
+            start_date = today.replace(month=1, day=1)
+            date_range = [(start_date.replace(month=i + 1),
+                           (start_date.replace(month=i + 2) - timedelta(days=1)) if i < 11 else start_date.replace(
+                               year=start_date.year + 1, month=1, day=1) - timedelta(days=1)) for i in range(12)]
+            for start, end in date_range:
+                male_count = Appointment.objects.filter(
+                    date_appointment__date__range=(start, end),
+                    doctor_id=doctor_id,
+                    doctor__hospital_id=request.user.hospital
+                ).count()
+                completed_count.append(male_count)
+
+        return completed_count

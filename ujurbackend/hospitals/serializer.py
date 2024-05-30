@@ -1,9 +1,16 @@
 from rest_framework import serializers
 
 from doctors.models import doctorDetails
-from hospitals.models import HospitalDetails, Department, LabReports, DepartmentHospitalMapping
+from hospitals.models import HospitalDetails, Department, LabReports, DepartmentHospitalMapping, HospitalAdmin
 from patients.models import Patient
 
+
+
+
+class HospitalAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HospitalAdmin
+        fields = "__all__"
 
 
 class DoctorModelForHospitalSerializer(serializers.ModelSerializer):
@@ -18,6 +25,12 @@ class HospitalSerializer(serializers.ModelSerializer):
         model = HospitalDetails
         fields = "__all__"
 
+class HospitalWithAccountSerializer(serializers.ModelSerializer):
+    hospital_details_account = HospitalAccountSerializer(many=True)
+    class Meta:
+        model = HospitalDetails
+        fields = "__all__"
+
 class HospitalWithReviewSerializer(serializers.ModelSerializer):
     average_review_stars = serializers.FloatField()
     total_review_stars = serializers.IntegerField()
@@ -27,6 +40,13 @@ class HospitalWithReviewSerializer(serializers.ModelSerializer):
 
 
 class HospitalSerializerWithDoctors(serializers.ModelSerializer):
+    hospital_doctors = DoctorModelForHospitalSerializer(many=True)
+    class Meta:
+        model = HospitalDetails
+        fields = "__all__"
+
+class HospitalSerializerWithDoctorsAndAccount(serializers.ModelSerializer):
+    hospital_details_account = HospitalAccountSerializer(many=True)
     hospital_doctors = DoctorModelForHospitalSerializer(many=True)
     class Meta:
         model = HospitalDetails
@@ -69,7 +89,6 @@ class DepartmentMappingSerializer(serializers.ModelSerializer):
 
 class DoctorModelForHospitalWithDeparmentSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer()
-
     class Meta:
         model = doctorDetails
         fields = "__all__"

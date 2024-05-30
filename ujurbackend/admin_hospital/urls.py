@@ -4,7 +4,7 @@ from admin_hospital.views import MainAdminLogin, FetchAllHospital, FetchHospital
     FetchAllDoctors, HandleAdmin, HandleDeleteAdmin, HandleHospitalAdmin, FetchMainDashboardDashboard, \
     FetchHospitalDashboardDashboard, DeleteHospitalAdminByUjur, DeletePatientAdminByUjur, CancelAppointmentAdminByUjur, \
     EditHospitalDetails, addAdminDoctors, editAdminDoctors, EditHospitalAdminPassword, EditCustomerAdminPassword, \
-    AddPromoCode, deletePromoCode, fetchAllReviewsHospital
+    AddPromoCode, deletePromoCode, fetchAllReviewsHospital, completedDoctorGraph
 from hospitals.views import FetchAllDepartments, AddDepartmentsAdmin, fetchAllReviews, FetchPatientsAdmin, \
     AddHospitalAdmin
 
@@ -39,6 +39,7 @@ urlpatterns = [
     path(r'add-promo-code/', AddPromoCode.as_view(), name="add-promo-code"),
     path(r'delete-promo-code/', deletePromoCode.as_view(), name="delete-promo-code"),
     path(r'fetch-all-reviews-hospitals/', fetchAllReviewsHospital.as_view(), name="fetch-all-reviews-hospitals"),
+    path(r'completed-doctor-graph/', completedDoctorGraph.as_view(), name="completed-doctor-graph"),
 
 ]
 

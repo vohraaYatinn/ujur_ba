@@ -13,7 +13,8 @@ class PatientManager:
             profile_photo = data.get("document")
             phone_number = data.get("phoneNumber")
             password = data.get("password")
-            full_name = data.get("fullName")
+            first_name = data.get("firstName")
+            last_name = data.get("lastName")
             gender = data.get("gender")
             email = data.get("email")
             date_of_birth = data.get("dob")
@@ -21,7 +22,7 @@ class PatientManager:
             height = data.get("height", None)
             district = data.get("district")
             block = data.get("block")
-            if phone_number and full_name and gender and email and date_of_birth and district and block:
+            if phone_number and first_name and last_name and gender and email and date_of_birth and district and block:
                 user_check = UsersDetails.objects.filter(Q(email=email) | Q(phone=phone_number))
                 if user_check:
                     raise Exception("This Phone number or Emails already exists")
@@ -44,7 +45,7 @@ class PatientManager:
                 new_patient = Patient.objects.create(
                     ujur_id=new_id_to_add,
                     user=user,
-                    full_name=full_name,
+                    full_name=str(first_name) + " "+str(last_name),
                     gender=gender,
                     date_of_birth=date_of_birth,
                     district=district,
@@ -106,7 +107,20 @@ class PatientManager:
             check_number = Patient.objects.filter(created_by=to_check).count()
             if check_number > 4:
                 raise Exception("You can only create upto 5 members")
+            latest_patient = Patient.objects.latest('id')
+            latest_ujur_id = latest_patient.ujur_id
+            if latest_ujur_id:
+                numeric_part = int(latest_ujur_id[4:])
+
+                # Increment the numeric part
+                new_numeric_part = numeric_part + 1
+
+                # Construct the new ujur_id
+                new_id_to_add = f'UJUR{new_numeric_part}'
+            else:
+                new_id_to_add = "UJUR101"
             new_patient = Patient.objects.create(
+                ujur_id=new_id_to_add,
                 user=patient.user,
                 full_name=full_name,
                 gender=gender,
@@ -189,7 +203,9 @@ class PatientManager:
         try:
             patient_id = request.user.id
             if patient_id:
-                return Appointment.objects.filter(patient__id =patient_id, lab_report__isnull=False).select_related('doctor').select_related('doctor__hospital')
+                return Appointment.objects.filter(patient__id =patient_id, lab_report__isnull=False).exclude(
+                                lab_report=''
+                            ).select_related('doctor').select_related('doctor__hospital')
         except:
             pass
 

@@ -32,13 +32,30 @@ class HospitalManager:
 
     @staticmethod
     def fetch_all_doctors_hospital(hospital_id):
-        hospital = HospitalDetails.objects.filter(id=hospital_id).prefetch_related("hospital_doctors")[0]
+        hospital = HospitalDetails.objects.filter(id=hospital_id).prefetch_related("hospital_doctors").prefetch_related("hospital_details_account")[0]
         reviews=[]
         if hospital:
             doctor_ids = [doctor.id for doctor in hospital.hospital_doctors.all()]
             reviews = PatientDoctorReviews.objects.filter(doctor_id__in=doctor_ids).select_related("doctor").select_related("patient")[:6]
         return hospital, reviews
 
+    @staticmethod
+    def fetch_each_doctors_hospital(hospital_id):
+        return doctorDetails.objects.filter(hospital_id=hospital_id).select_related("department")
+
+
+
+    @staticmethod
+    def fetch_completed_doctor_graph(data):
+        hospital = data.get("hospitalSearch", False)
+        patient = data.get("patientName", False)
+        filters = Q()
+        if hospital:
+            filters &= Q(hospital_id=hospital)
+        if patient:
+            filters &= Q(patient__full_name__icontains=patient)
+        reviews = HospitalPatientReviews.objects.filter(filters).select_related("hospital").select_related("patient")
+        return reviews
 
     @staticmethod
     def fetch_all_hospital_reviews(data):
@@ -106,7 +123,7 @@ class HospitalManager:
         filters = Q()
         if hospitals:
             filters &= Q(id=hospitals)
-        return HospitalDetails.objects.filter(filters).order_by("-created_at")
+        return HospitalDetails.objects.filter(filters).order_by("-created_at").prefetch_related("hospital_details_account")
 
     @staticmethod
     def fetch_lab_reports(request):
@@ -116,7 +133,7 @@ class HospitalManager:
     def hospital_admin_login_check(data):
             email = data.get("email")
             password = data.get("password")
-            hospital_admin = HospitalAdmin.objects.filter(username=email, password=password)
+            hospital_admin = HospitalAdmin.objects.filter(ujur_id=email, password=password)
             if hospital_admin.exists():
                 return hospital_admin[0]
             return False
@@ -183,8 +200,21 @@ class HospitalManager:
         logo = data.get("logo", None)
         profile = data.get("profile", None)
         google_link = data.get("googleMap", None)
+        latest_ujur_id=False
         if hospital_name and email and phone and logo and profile:
+            try:
+                latest_hospital_admin = HospitalAdmin.objects.latest('id')
+                latest_ujur_id = latest_hospital_admin.ujur_id
+            except HospitalAdmin.DoesNotExist:
+                new_id_to_add = "CMG101"
+            if latest_ujur_id:
+                numeric_part = int(latest_ujur_id[3:])
+                new_numeric_part = numeric_part + 1
+                new_id_to_add = f'CMG{new_numeric_part}'
+            else:
+                new_id_to_add = "CMG101"
             hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile)
+            new_hospital_admin = HospitalAdmin.objects.create(ujur_id= new_id_to_add, name=hospital_name, username=email, password="demo@123", hospital=hospital_proj)
             if website:
                 hospital_proj.website = website
             if description:
@@ -193,7 +223,7 @@ class HospitalManager:
                 hospital_proj.google_link = google_link
             hospital_proj.save()
         else:
-            raise Exception("Something is missing")
+            raise Exception("Something is missing or duplicate entry, Please check email and phone number should be unique and not in use")
     @staticmethod
     def fetch_hospital_admin_data(request, data):
         hospital_id = request.user.hospital
@@ -324,7 +354,6 @@ class HospitalManager:
             start_date = today.replace(month=1, day=1)
         else:
             start_date = today.replace(day=1)
-
         department_patient_count = Appointment.objects.filter(
         date_appointment__gte=start_date, doctor__hospital=request.user.hospital
     ).values(
@@ -333,11 +362,8 @@ class HospitalManager:
             patient_count=Count('patient')
         ).order_by('-patient_count')
         department_patient_count_dict = {}
-
-        # Print the results (or you can return this data to be used in your views/templates)
         for entry in department_patient_count:
             department_patient_count_dict[entry['doctor__department__name']] = entry['patient_count']
-
         return department_patient_count_dict
 
 
@@ -353,7 +379,6 @@ class HospitalManager:
             start_date = today.replace(month=1, day=1)
         else:
             start_date = today.replace(day=1)
-
         department_patient_count = Appointment.objects.filter(
         date_appointment__gte=start_date, doctor__hospital=request.user.hospital
     ).values(
@@ -362,13 +387,9 @@ class HospitalManager:
             patient_count=Count('patient')
         ).order_by('-patient_count')
         department_patient_count_dict = {}
-
-        # Print the results (or you can return this data to be used in your views/templates)
         for entry in department_patient_count:
             department_patient_count_dict[entry['patient__gender']] = entry['patient_count']
-
         return department_patient_count_dict
-
 
     @staticmethod
     def age_analytics_graphs_hospital(request, data):
@@ -382,7 +403,6 @@ class HospitalManager:
             start_date = today.replace(month=1, day=1)
         else:
             start_date = today.replace(day=1)
-
         department_patient_count = Appointment.objects.filter(
         date_appointment__gte=start_date, doctor__hospital=request.user.hospital
     ).values(
@@ -391,9 +411,6 @@ class HospitalManager:
             patient_count=Count('patient')
         ).order_by('-patient_count')
         department_patient_count_dict = {}
-
-        # Print the results (or you can return this data to be used in your views/templates)
         for entry in department_patient_count:
             department_patient_count_dict[entry['doctor__department__name']] = entry['patient_count']
-
         return department_patient_count_dict

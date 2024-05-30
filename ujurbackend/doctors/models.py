@@ -6,6 +6,7 @@ from users.models import UsersDetails
 
 
 class doctorDetails(models.Model):
+    ujur_id = models.CharField(max_length=15, unique=True, null=True)
     user = models.OneToOneField(UsersDetails, on_delete=models.CASCADE)
     email = models.CharField(max_length=100, null=True)
     password = models.CharField(max_length=100, null=True)

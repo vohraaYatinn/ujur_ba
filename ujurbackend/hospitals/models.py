@@ -25,11 +25,12 @@ class HospitalDetails(models.Model):
 
 
 class HospitalAdmin(models.Model):
+    ujur_id = models.CharField(max_length=100, unique=True, null=True)
     name = models.CharField(max_length=100)
     username = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
     created_by = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE, null=True, blank=True)
+    hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE, null=True, blank=True, related_name="hospital_details_account")
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
