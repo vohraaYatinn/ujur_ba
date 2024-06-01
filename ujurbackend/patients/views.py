@@ -166,3 +166,45 @@ class uploadCustomerLabReport(APIView):
             return Response({"result" : "success", "message": "Lab Report Uploaded Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class applyCoupon(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            user_change = PatientManager.apply_coupons(request, data)
+            if user_change:
+                message = "Coupon applied successfully"
+            else:
+                message = "Invalid Coupon entered please check it again"
+            return Response({"result" : "success", "message": message, "percentage":user_change}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class fetchPaymentDetails(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            req_order = PatientManager.fetch_payment_razorpay(request, data)
+            return Response({"result" : "success", "data": req_order}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class paymentVerifyCheck(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            req_order = PatientManager.verify_payment_check(request, data)
+            return Response({"result" : "success", "data": req_order}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

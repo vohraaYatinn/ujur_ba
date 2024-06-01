@@ -1,10 +1,18 @@
 from django.db import IntegrityError
 from django.db.models import Q
 
+from admin_hospital.models import promoCodes
 from doctors.models import PatientDoctorReviews, HospitalPatientReviews, Appointment
 from patients.models import Patient
 from users.models import UsersDetails
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseBadRequest
 
+
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 class PatientManager:
     @staticmethod
@@ -220,5 +228,48 @@ class PatientManager:
                 if lab_report:
                     req_appointment.lab_report = lab_report
                     req_appointment.save()
+        except:
+            raise Exception("Something went wrong")
+
+    @staticmethod
+    def apply_coupons(request, data):
+        try:
+            coupon = data.get("coupon", False)
+            if coupon:
+                req_appointment = promoCodes.objects.filter(promocode =coupon)
+                if req_appointment:
+                    return req_appointment[0].percentage
+                else:
+                    return False
+        except:
+            raise Exception("Something went wrong")
+
+    @staticmethod
+    def fetch_payment_razorpay(request, data):
+        try:
+            client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+            DATA = {
+                "amount": 100,
+                "currency": "INR",
+                "receipt": "receipt#1",
+            }
+            req_order = client.order.create(data=DATA)
+            return req_order
+        except:
+            raise Exception("Something went wrong")
+
+    @staticmethod
+    def verify_payment_check(request, data):
+        try:
+            razorpay_order_id = data.get("razorpay_order_id")
+            razorpay_payment_id = data.get("razorpay_payment_id")
+            razorpay_signature = data.get("razorpay_signature")
+            client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+            verify_payment = client.utility.verify_payment_signature({
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            })
+            return verify_payment
         except:
             raise Exception("Something went wrong")

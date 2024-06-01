@@ -204,3 +204,5 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'jwtToken'
 ]
+RAZOR_KEY_ID = "rzp_test_mVj5vQrJLrX9Mm"
+RAZOR_KEY_SECRET = "6iGIv6WCvkAEVhDCvlhYZbQn"
