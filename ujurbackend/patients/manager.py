@@ -1,5 +1,6 @@
 from django.db import IntegrityError
 from django.db.models import Q
+import json
 
 from admin_hospital.models import promoCodes
 from doctors.models import PatientDoctorReviews, HospitalPatientReviews, Appointment
@@ -247,9 +248,10 @@ class PatientManager:
     @staticmethod
     def fetch_payment_razorpay(request, data):
         try:
+            amount = data.get("amount")
             client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
             DATA = {
-                "amount": 100,
+                "amount": int(amount)*100,
                 "currency": "INR",
                 "receipt": "receipt#1",
             }
@@ -261,15 +263,20 @@ class PatientManager:
     @staticmethod
     def verify_payment_check(request, data):
         try:
-            razorpay_order_id = data.get("razorpay_order_id")
-            razorpay_payment_id = data.get("razorpay_payment_id")
-            razorpay_signature = data.get("razorpay_signature")
+            data = data['data']
+            json_string = json.loads(data)
+            razorpay_order_id = json_string['response'].get("razorpay_order_id")
+            razorpay_payment_id = json_string['response'].get("razorpay_payment_id")
+            razorpay_signature = json_string['response'].get("razorpay_signature")
             client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
-            verify_payment = client.utility.verify_payment_signature({
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': razorpay_payment_id,
-                'razorpay_signature': razorpay_signature
-            })
+            try:
+                verify_payment = client.utility.verify_payment_signature({
+                    'razorpay_order_id': razorpay_order_id,
+                    'razorpay_payment_id': razorpay_payment_id,
+                    'razorpay_signature': razorpay_signature
+                })
+            except:
+                verify_payment = False
             return verify_payment
         except:
             raise Exception("Something went wrong")
