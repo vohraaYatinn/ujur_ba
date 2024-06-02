@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -31,7 +31,7 @@ class PhoneOtpVerify(APIView):
                 email = data.get('email', False)
                 filters = Q()
                 filters &= Q(user__email=email) | Q(ujur_id=email)
-                filters &= Q(created_by=None)
+                filters &= Q(created_by=None) | Q(created_by=F('id'))
                 patient = Patient.objects.get(filters)
                 patient_data = PatientSerializer(patient).data
                 payload = {

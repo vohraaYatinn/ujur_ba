@@ -147,7 +147,11 @@ class PatientManager:
         try:
             user_created = requests.user.id
             document = data.get("document", False)
-            full_name = data.get("full_name")
+            firstName = data.get("firstName")
+            lastName = data.get("lastName")
+            email = data.get("email")
+            password = data.get("password")
+            phoneNumber = data.get("phoneNumber")
             gender = data.get("gender")
             date_of_birth = data.get("date_of_birth")
             blood_group = data.get("blood_group")
@@ -158,8 +162,8 @@ class PatientManager:
             patient = Patient.objects.get(id=user_created)
             new_patient = Patient.objects.get(id=user_created)
             new_patient.user=patient.user
-            if full_name:
-                new_patient.full_name=full_name
+            if firstName and lastName:
+                new_patient.full_name = firstName + " " + lastName
             if gender:
                 new_patient.gender = gender
             if block:
@@ -182,9 +186,17 @@ class PatientManager:
 
             if height:
                 new_patient.height = height
+
             if document:
                 new_patient.profile_picture = document
+            if email:
+                new_patient.user.email = email
+            if password:
+                new_patient.user.password = password
+            if phoneNumber:
+                new_patient.user.phone = phoneNumber
             new_patient.save()
+            new_patient.user.save()
             return new_patient
         except:
             raise Exception ("Something Went Wrong")
