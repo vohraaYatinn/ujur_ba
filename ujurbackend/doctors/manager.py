@@ -636,11 +636,14 @@ class DoctorsManagement:
     def doctor_fetch_reviews(request, data):
         filters = Q(doctor_id=request.user.doctor)
         star_search = data.get("starSearch", False)
+        if star_search == "false":
+            star_search = False
         date = data.get("date", False)
         if star_search:
             filters &= Q(reviews_star = star_search)
         if date:
             filters &= Q(created_at__date = date)
+
         reviews_objs = PatientDoctorReviews.objects.filter(
             filters).select_related("patient")
         # Initialize counts for each star rating
@@ -878,6 +881,7 @@ class DoctorsManagement:
     @staticmethod
     def add_new_admin_doctor_hospital(request, data):
         hospital_admin_id = data.get("HospitalsId", False)
+        hospital_id=False
         if hospital_admin_id:
             hospital_id = hospital_admin_id
         full_name = data.get("fullName", None)
@@ -901,9 +905,10 @@ class DoctorsManagement:
         afternoonTime = data.get("afternoonTime", None)
         license = data.get("license", None)
         hospital_details = HospitalAdmin.objects.get(hospital_id=hospital_id)
+        latest_ujur_id = False
         if hospital_id:
             try:
-                latest_hospital_admin = doctorDetails.objects.latest('id')
+                latest_hospital_admin = doctorDetails.objects.filter(hospital_id=hospital_id).latest('id')
                 latest_ujur_id = latest_hospital_admin.ujur_id
             except doctorDetails.DoesNotExist:
                 new_id_to_add = hospital_details.ujur_id + "D1"
@@ -969,10 +974,15 @@ class DoctorsManagement:
         morningTime = data.get("morningTime", None)
         eveningTime = data.get("eveningTime", None)
         afternoonTime = data.get("afternoonTime", None)
+        phone_number = data.get("phoneNumber")
+
         if doctor_id:
             doctor_obj = doctorDetails.objects.get(id=doctor_id)
             if email:
                 doctor_obj.email = email
+            if phone_number:
+                doctor_obj.user.phone = phone_number
+                doctor_obj.user.save()
             if full_name:
                 doctor_obj.full_name = full_name
             if bio:
@@ -1017,7 +1027,7 @@ class DoctorsManagement:
     def reset_password_request_apply(request, data):
         email_to_reset = data.get("email")
         if email_to_reset:
-            doctor = doctorDetails.objects.filter(email=email_to_reset)
+            doctor = doctorDetails.objects.filter(ujur_id=email_to_reset)
             if doctor:
                 ResetPasswordRequest.objects.create(doctor=doctor[0])
         else:
@@ -1084,6 +1094,7 @@ class DoctorsManagement:
         hospitals = data.get('hospitalSearch', False)
         department = data.get('department', False)
         star_review = data.get('starSearch', False)
+        date = data.get('date', False)
 
         filters = Q(doctor__hospital_id=request.user.hospital)
         if patient_name:
@@ -1094,6 +1105,8 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if star_review:
             filters &= Q(reviews_star=star_review)
+        if date:
+            filters &= Q(created_at__date=date)
         return PatientDoctorReviews.objects.filter(filters).select_related("patient","doctor", "doctor__hospital", "doctor__department").order_by("-created_at")
 
 

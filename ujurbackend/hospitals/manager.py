@@ -249,9 +249,9 @@ class HospitalManager:
 
     @staticmethod
     def add_medicines_hospital(request, data):
-        medicines_name = data.get("name")
-        medicines_description = data.get("description")
-        if medicines_name and medicines_description:
+        medicines_name = data.get("name", None)
+        medicines_description = data.get("description", None)
+        if medicines_name:
             return MedicinesName.objects.create(
                 hospital_id=request.user.hospital,
                 name = medicines_name,

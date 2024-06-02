@@ -444,7 +444,7 @@ class EditHospitalAdminPassword(APIView):
             data = request.data
             HospitalManager.edit_hospital_admin_password(request, data)
             return Response(
-                {"result": "success", "message": "Reset Password Request has been applied Successfully"}, 200)
+                {"result": "success", "message": "Password has been successfully changed"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
