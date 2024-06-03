@@ -136,7 +136,7 @@ class PatientManager:
                 date_of_birth=date_of_birth,
                 district=district,
                 block=block,
-                created_by=patient
+                created_by=to_check
             )
             return new_patient
         except IntegrityError as e:
@@ -144,62 +144,61 @@ class PatientManager:
 
     @staticmethod
     def change_profile_user(requests, data):
-        try:
-            user_created = requests.user.id
-            document = data.get("document", False)
-            firstName = data.get("firstName")
-            lastName = data.get("lastName")
-            email = data.get("email")
-            password = data.get("password")
-            phoneNumber = data.get("phoneNumber")
-            gender = data.get("gender")
-            date_of_birth = data.get("date_of_birth")
-            blood_group = data.get("blood_group")
-            weight = data.get("weight")
-            district = data.get("district")
-            block = data.get("block")
-            height = data.get("height")
-            patient = Patient.objects.get(id=user_created)
-            new_patient = Patient.objects.get(id=user_created)
-            new_patient.user=patient.user
-            if firstName and lastName:
-                new_patient.full_name = firstName + " " + lastName
-            if gender:
-                new_patient.gender = gender
-            if block:
-                new_patient.block = block
+        user_created = requests.user.id
+        document = data.get("document", False)
+        firstName = data.get("firstName")
+        lastName = data.get("lastName")
+        email = data.get("email")
+        password = data.get("password")
+        phoneNumber = data.get("phoneNumber")
+        gender = data.get("gender")
+        date_of_birth = data.get("date_of_birth")
+        blood_group = data.get("blood_group")
+        weight = data.get("weight")
+        district = data.get("district")
+        block = data.get("block")
+        height = data.get("height")
+        patient = Patient.objects.get(id=user_created)
+        new_patient = Patient.objects.get(id=user_created)
+        new_patient.user=patient.user
 
-            if date_of_birth:
-                new_patient.date_of_birth = date_of_birth
+        if email or phoneNumber:
+            user_check = UsersDetails.objects.exclude(id=new_patient.user.id).filter(Q(email=email) | Q(phone=phoneNumber))
+            if user_check:
+                raise Exception("This Phone number or Emails already exists")
+        if firstName and lastName:
+            new_patient.full_name = firstName + " " + lastName
+        if gender:
+            new_patient.gender = gender
+        if block:
+            new_patient.block = block
 
-            if blood_group:
-                new_patient.blood_group = blood_group
+        if date_of_birth:
+            new_patient.date_of_birth = date_of_birth
 
-            if weight:
-                new_patient.weight = weight
+        if blood_group:
+            new_patient.blood_group = blood_group
 
-            if district:
-                new_patient.district = district
+        if weight:
+            new_patient.weight = weight
 
-            if patient:
-                new_patient.created_by = patient
+        if district:
+            new_patient.district = district
 
-            if height:
-                new_patient.height = height
+        if height:
+            new_patient.height = height
 
-            if document:
-                new_patient.profile_picture = document
-            if email:
-                new_patient.user.email = email
-            if password:
-                new_patient.user.password = password
-            if phoneNumber:
-                new_patient.user.phone = phoneNumber
-            new_patient.save()
-            new_patient.user.save()
-            return new_patient
-        except:
-            raise Exception ("Something Went Wrong")
+        if document:
+            new_patient.profile_picture = document
+        if email:
+            new_patient.user.email = email
+        if password:
+            new_patient.user.password = password
+        if phoneNumber:
+            new_patient.user.phone = phoneNumber
+        new_patient.save()
+        new_patient.user.save()
+        return new_patient
 
 
     @staticmethod
