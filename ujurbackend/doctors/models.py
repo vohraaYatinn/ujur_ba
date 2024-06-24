@@ -65,9 +65,11 @@ class Appointment(models.Model):
     date_appointment = models.DateTimeField()
     status = models.CharField(max_length=100, default="created")
     payment_mode = models.CharField(max_length=100, null=True)
+    payment_status = models.CharField(max_length=100, null=True)
     patients_query = models.TextField(null=True)
     doctor_instruction = models.TextField(null=True)
     pdf_content = models.TextField(null=True)
+    cancel_reason = models.TextField(null=True)
     lab_report = models.FileField(upload_to='lab_report/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -75,6 +77,18 @@ class Appointment(models.Model):
     class Meta:
         managed = True
         db_table = "appointment"
+
+
+
+class Revenue(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='revenues')
+    booking_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    doctor_fees = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = True
+        db_table = "revenue"
 
 
 class FavDoctors(models.Model):

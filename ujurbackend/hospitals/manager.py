@@ -200,8 +200,9 @@ class HospitalManager:
         logo = data.get("logo", None)
         profile = data.get("profile", None)
         google_link = data.get("googleMap", None)
+        years_of_establishment = data.get("yearsofestablishment", None)
         latest_ujur_id=False
-        if hospital_name and email and phone and logo and profile:
+        if hospital_name and email and phone and logo and profile and years_of_establishment:
             try:
                 latest_hospital_admin = HospitalAdmin.objects.latest('id')
                 latest_ujur_id = latest_hospital_admin.ujur_id
@@ -213,7 +214,7 @@ class HospitalManager:
                 new_id_to_add = f'CMG{new_numeric_part}'
             else:
                 new_id_to_add = "CMG101"
-            hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile)
+            hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile, years_of_establishment=years_of_establishment)
             new_hospital_admin = HospitalAdmin.objects.create(ujur_id= new_id_to_add, name=hospital_name, username=email, password="demo@123", hospital=hospital_proj)
             if website:
                 hospital_proj.website = website
@@ -223,7 +224,7 @@ class HospitalManager:
                 hospital_proj.google_link = google_link
             hospital_proj.save()
         else:
-            raise Exception("Something is missing or duplicate entry, Please check email and phone number should be unique and not in use")
+            raise Exception("Something is missing or duplicate entry, Please check email and phone number should be unique and not in use, Hospital image should be added")
     @staticmethod
     def fetch_hospital_admin_data(request, data):
         hospital_id = request.user.hospital

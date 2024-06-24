@@ -291,3 +291,48 @@ class PatientManager:
             return verify_payment
         except:
             raise Exception("Something went wrong")
+
+    @staticmethod
+    def cancel_patient_appointment(request, data):
+        try:
+            patient_id = request.user.id
+            appointment_id = data.get("appointmentId")
+            reason = data.get("reason")
+            if patient_id and appointment_id and reason:
+                req_appointment =  Appointment.objects.filter(patient__id =patient_id, id=appointment_id )
+                if req_appointment and req_appointment[0].status != "cancel":
+                    req_appointment[0].status = "cancel"
+                    req_appointment[0].cancel_reason=reason
+                    req_appointment[0].save()
+            else:
+                raise Exception("Something went wrong")
+        except:
+            pass
+    @staticmethod
+    def get_forgot_password_account(request, data):
+        email = data.get("email")
+        phone = data.get("phone")
+        dob = data.get("dob")
+        if email and phone and dob:
+            req_user = UsersDetails.objects.filter(email =email, phone=phone, user_patient_table__date_of_birth = dob)
+        else:
+            raise Exception("All fields are mandatory to enter")
+        if req_user:
+            return req_user[0]
+        else:
+            raise Exception("User does not exist with the given credentials")
+
+    @staticmethod
+    def change_password(request, data):
+        password = data.get("password")
+        user_id = data.get("userId")
+        if user_id and password:
+            req_user = UsersDetails.objects.filter(id=user_id)
+        else:
+            raise Exception("All fields are mandatory to enter")
+        if req_user:
+            req_user[0].password = password
+            req_user[0].save()
+        else:
+            raise Exception("User does not exist with the given credentials")
+

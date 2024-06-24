@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
     DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer, PromoCodeSerializer, \
-    HospitalReviewsWithPatientsSerializer
+    HospitalReviewsWithPatientsSerializer, AppointmentWithDepartmentandDoctorWithRevenueSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
     DoctorReviewsWithPatientsAndDoctorSerializer
@@ -110,6 +110,20 @@ class FetchAllAppointmentsAdmin(APIView):
             data = request.query_params
             hospital_data = DoctorsManagement.fetch_all_appointments(data)
             appointment_data = AppointmentWithDepartmentandDoctorSerializer(hospital_data, many=True).data
+            return Response({"result": "success", "data": appointment_data}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)
+
+
+class FetchAllRevenueAdmin(APIView):
+    permission_classes = [IsAuthenticatedAdminPanel]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            hospital_data = DoctorsManagement.fetch_all_revenue(data)
+            appointment_data = AppointmentWithDepartmentandDoctorWithRevenueSerializer(hospital_data, many=True).data
             return Response({"result": "success", "data": appointment_data}, 200)
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)

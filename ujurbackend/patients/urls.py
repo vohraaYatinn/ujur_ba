@@ -1,7 +1,8 @@
 from django.urls import include, path
 from patients.views import patientSignup, BookAppointmentPatient, FetchPatientAppointments, fetchPatientPersonalDetails, \
     addNewProfilePatient, changeJwt, changeProfileValue, fetchCustomerReviews, fetchCustomerReviewsHospital, \
-    fetchLabReports, uploadCustomerLabReport, applyCoupon, fetchPaymentDetails, paymentVerifyCheck
+    fetchLabReports, uploadCustomerLabReport, applyCoupon, fetchPaymentDetails, paymentVerifyCheck, \
+    cancelAppointmentPatient, forgotPasswordGet
 
 urlpatterns = [
     path(r'patient-signup/', patientSignup.as_view(), name="phone_otp"),
@@ -18,4 +19,7 @@ urlpatterns = [
     path(r'apply_coupons/', applyCoupon.as_view(), name="apply_coupon"),
     path(r'payment-order-fetch/', fetchPaymentDetails.as_view(), name="payment-order-fetch"),
     path(r'confirm-payment/', paymentVerifyCheck.as_view(), name="payment-verify-check"),
+    path(r'cancel-appointment-patient/', cancelAppointmentPatient.as_view(), name="cancel-appointment-patient"),
+    path(r'forgot-password-account-get/', forgotPasswordGet.as_view(), name="forgot-password-account-get"),
+    path(r'change-password/', forgotPasswordGet.as_view(), name="change-password"),
 ]

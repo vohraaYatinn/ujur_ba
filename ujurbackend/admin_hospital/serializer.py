@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from admin_hospital.models import mainAdminDetails, promoCodes
 from doctors.models import doctorDetails, doctorSlots, PatientDoctorReviews, Appointment, FavDoctors, DoctorLeave, \
-    ResetPasswordRequest, HospitalPatientReviews
+    ResetPasswordRequest, HospitalPatientReviews, Revenue
 from hospitals.models import HospitalAdmin
 from hospitals.serializer import HospitalSerializer, DepartmentSerializer, HospitalDoctorSerializer
 from patients.models import Patient
@@ -42,6 +42,11 @@ class DoctorModelWithDepartmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = doctorDetails
+        fields = "__all__"
+
+class RevenueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Revenue
         fields = "__all__"
 
 class DocotrSlotsSerializer(serializers.ModelSerializer):
@@ -131,9 +136,18 @@ class AppointmentWithDepartmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+class AppointmentWithDepartmentandDoctorWithRevenueSerializer(serializers.ModelSerializer):
+    doctor = DoctorModelWithDepartmentSerializer()
+    revenues = RevenueSerializer(many=True)
+    patient = PatientDetailsWithUserDoctorSerializer()
+    class Meta:
+        model = Appointment
+        fields = "__all__"
+
 class AppointmentWithDepartmentandDoctorSerializer(serializers.ModelSerializer):
     doctor = DoctorModelWithDepartmentSerializer()
-    patient = PatientDetailsFprDoctorSerializer()
+    patient = PatientDetailsWithUserDoctorSerializer()
     class Meta:
         model = Appointment
         fields = "__all__"

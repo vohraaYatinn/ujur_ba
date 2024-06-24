@@ -9,6 +9,7 @@ from django.core.validators import FileExtensionValidator
 
 class HospitalDetails(models.Model):
     name = models.CharField(max_length=100)
+    years_of_establishment = models.CharField(max_length=10, null=True)
     description = models.TextField(blank=True)
     address = models.CharField(max_length=200)
     contact_number = models.CharField(max_length=15)

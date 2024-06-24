@@ -8,9 +8,9 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
-    checkReviewSerializer, checkHospitalReviewSerializer
+    checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer
 from hospitals.manager import HospitalManager
-from hospitals.serializer import DepartmentSerializer
+from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -563,3 +563,33 @@ class fetchDepartmentHospital(APIView):
         except Exception as e:
             return Response({"result": "failure", "message": str(e)}, 500)
 
+
+
+class getAllDoctorsPatient(APIView):
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            patients_obj = DoctorsManagement.all_doctor_patients(request, data)
+            all_patients = DoctorModelWithDepartmentHospitalSerializer(patients_obj, many=True).data
+
+            return Response(
+                {"result": "success", "data": all_patients}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class getAllHospitalPatient(APIView):
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            patients_obj = DoctorsManagement.all_hospital_patients(request, data)
+            all_patients = HospitalDoctorSerializer(patients_obj, many=True).data
+
+            return Response(
+                {"result": "success", "data": all_patients}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

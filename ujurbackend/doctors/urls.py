@@ -5,7 +5,7 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     fetchDoctorOwnProfile, doctorChangePassword, dashboardDetails, dashboardPatientsDetails, dashboarDoctorReviews, \
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
     ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines, writeReview, \
-    writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment
+    writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment, getAllDoctorsPatient, getAllHospitalPatient
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -21,6 +21,8 @@ urlpatterns = [
     path(r'fetch_appointment_details/', fetchAppointmentDetails.as_view(), name="fetch-patients-personal-details"),
     path(r'fetch_appointments_patients/', fetchAppointmentDetailsPatient.as_view(), name="fetch-patients-details"),
     path(r'search-details/', patientSearching.as_view(), name="fetch-patients-details"),
+    path(r'get-all-doctor-patient/', getAllDoctorsPatient.as_view(), name="get-all-doctor-patient"),
+    path(r'get-all-hospital-patient/', getAllHospitalPatient.as_view(), name="get-all-hospital-patient"),
 
 
     # doctor app api

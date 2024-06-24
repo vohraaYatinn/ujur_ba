@@ -208,3 +208,35 @@ class paymentVerifyCheck(APIView):
             return Response({"result" : "success", "data": req_order}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+class cancelAppointmentPatient(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            req_appointment = PatientManager.cancel_patient_appointment(request, data)
+            return Response({"result" : "success", "message": "Cancel request has been applied"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class forgotPasswordGet(APIView):
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            req_appointment = PatientManager.get_forgot_password_account(request, data)
+            return Response({"result" : "success", "message": "Cancel request has been applied", "user":req_appointment.id}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            req_appointment = PatientManager.change_password(request, data)
+            return Response({"result" : "success", "message": "Password has been changed successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

@@ -1,7 +1,7 @@
 from sqlite3 import IntegrityError
 
 from doctors.models import doctorDetails, doctorSlots, FavDoctors, Appointment, PatientDoctorReviews, DoctorLeave, \
-    ResetPasswordRequest, HospitalPatientReviews
+    ResetPasswordRequest, HospitalPatientReviews, Revenue
 from django.db.models import Avg, Count, Prefetch
 from django.db.models.functions import Round
 from datetime import datetime, timedelta
@@ -19,7 +19,7 @@ from users.models import UsersDetails
 class DoctorsManagement:
     @staticmethod
     def fetch_dashboard_doctor(data):
-        return doctorDetails.objects.filter(is_active=True).annotate(
+        return doctorDetails.objects.filter().annotate(
                 avg_reviews=Round(Avg("doctor_reviews__reviews_star"),1),
                 total_reviews=Count("doctor_reviews__id")
             ).prefetch_related("doctor_slots")[:int(data.get("pageNumber"))]
@@ -116,6 +116,7 @@ class DoctorsManagement:
         status = data.get('status', False)
         department = data.get('department', False)
         hospitals = data.get('hospitalSearch', False)
+        paymentStatus = data.get('paymentStatus', False)
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
@@ -130,8 +131,47 @@ class DoctorsManagement:
             filters &= Q(doctor__department=department)
         if hospitals:
             filters &= Q(doctor__hospital=hospitals)
+        if paymentStatus:
+            filters &= Q(payment_status=paymentStatus)
         appointments = Appointment.objects.filter(filters
-        ).select_related("doctor", "patient").order_by("-created_at")
+        ).select_related("doctor", "patient", "patient__user").order_by("-created_at")
+        return appointments
+
+    @staticmethod
+    def fetch_all_revenue(data):
+        filters = Q()
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        date = data.get('date', False)
+        slots = data.get('slots', False)
+        status = data.get('status', False)
+        department = data.get('department', False)
+        hospitals = data.get('hospitalSearch', False)
+        paymentStatus = data.get('paymentStatus', False)
+        startDate = data.get('startDate', False)
+        endDate = data.get('endDate', False)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if date:
+            filters &= Q(date_appointment__date=date)
+        if slots:
+            filters &= Q(slot=slots)
+        if status:
+            filters &= Q(status=status)
+        if department:
+            filters &= Q(doctor__department=department)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        if paymentStatus:
+            filters &= Q(payment_status=paymentStatus)
+        if startDate:
+            filters &= Q(date_appointment__date__gt=startDate)
+        if endDate:
+            filters &= Q(date_appointment__date__lt=endDate)
+        appointments = Appointment.objects.filter(filters
+        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").order_by("-created_at")
         return appointments
 
 
@@ -328,13 +368,19 @@ class DoctorsManagement:
     def patient_booking_confirmation(data):
         booking_id = data.get("bookingId")
         paymentMode = data.get("paymentMode")
+        bookingAmount = data.get("bookingAmount")
+        payment_status = "Not Paid"
+        if paymentMode == "Online":
+            payment_status = "Paid"
         if booking_id:
             appointment = Appointment.objects.filter(
                 id=booking_id
             ).select_related("doctor")[0]
             appointment.status = "pending"
             appointment.payment_mode = paymentMode
+            appointment.payment_status = payment_status
             appointment.save()
+            Revenue.objects.create(appointment=appointment,booking_amount=17.7, doctor_fees=float(bookingAmount)-17.7)
             return True, appointment
         else:
             raise Exception("It Looks like you have missed something, Please try again")
@@ -361,8 +407,10 @@ class DoctorsManagement:
         if patient_id and appointment_type:
             if appointment_type == "upcoming":
                 appoint_type = "pending"
-            else:
+            elif appointment_type == "completed":
                 appoint_type = "completed"
+            else:
+                appoint_type = "cancel"
             latest_appointment = Appointment.objects.filter(
                 patient_id=patient_id,
                 status=appoint_type
@@ -631,6 +679,15 @@ class DoctorsManagement:
         patients = Patient.objects.filter(id__in=patients_with_appointments).select_related("user")
         return patients
 
+    @staticmethod
+    def all_doctor_patients(request, data):
+        number_of_page = data.get("pageNumber", 1)
+        return doctorDetails.objects.filter().prefetch_related("department", "hospital")[:int(number_of_page)*20]
+
+    @staticmethod
+    def all_hospital_patients(request, data):
+        number_of_page = data.get("pageNumber", 1)
+        return HospitalDetails.objects.filter()[:int(number_of_page)*20]
 
     @staticmethod
     def doctor_fetch_reviews(request, data):
