@@ -30,7 +30,7 @@ class PhoneOtpVerify(APIView):
             if user_exist == "user exists":
                 email = data.get('email', False)
                 filters = Q()
-                filters &= Q(user__email=email) | Q(ujur_id=email)
+                filters &= Q(user__email=email) | Q(ujur_id=email) | Q(user__phone=email)
                 filters &= Q(created_by=None) | Q(created_by=F('id'))
                 patient = Patient.objects.get(filters)
                 patient_data = PatientSerializer(patient).data

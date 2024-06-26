@@ -217,7 +217,7 @@ class cancelAppointmentPatient(APIView):
         try:
             data = request.data
             req_appointment = PatientManager.cancel_patient_appointment(request, data)
-            return Response({"result" : "success", "message": "Cancel request has been applied"}, 200)
+            return Response({"result" : "success", "message": "Cancel request has been applied and payment will be credited back to your account "}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

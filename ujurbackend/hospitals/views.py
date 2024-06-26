@@ -1,13 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from admin_hospital.serializer import HospitalAdminsSerailizer, HospitalReviewsWithPatientsSerializer
+from admin_hospital.serializer import HospitalAdminsSerailizer, HospitalReviewsWithPatientsSerializer, \
+    AppointmentWithDepartmentandDoctorWithRevenueSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAverageUserSerializer, \
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
     AppointmentWithDepartmentandDoctorSerializer, DoctorReviewsSerializer, DoctorReviewsWithPatientsAndDoctorSerializer, \
     PatientDetailsFprDoctorSerializer, MedicinesSerializer, ReferToSerializer, \
-    PatientDetailsFprDoctorWithEmailSerializer, PatientDetailsWithUserDoctorSerializer
+    PatientDetailsFprDoctorWithEmailSerializer, PatientDetailsWithUserDoctorSerializer, AppointmentUserSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import HospitalSerializer, HospitalSerializerWithDoctors, LabReportsSerializer, \
     DepartmentSerializer, DepartmentMappingSerializer, DoctorModelForHospitalSerializer, HospitalWithReviewSerializer, \
@@ -182,7 +183,7 @@ class FetchHospitalAppointments(APIView):
         try:
             data = request.query_params
             appointment_objs = DoctorsManagement.fetch_hospital_appointments(request, data)
-            latest_appointment_data = AppointmentWithDepartmentandDoctorSerializer(appointment_objs, many=True).data
+            latest_appointment_data = AppointmentUserSerializer(appointment_objs, many=True).data
             return Response(
                 {"result": "success", "data": latest_appointment_data}, 200)
         except Exception as e:
@@ -305,7 +306,7 @@ class FetchPatientsHospitals(APIView):
         try:
             data = request.query_params
             all_patients = DoctorsManagement.all_patients_hospital(request, data)
-            reviews_serialized_data = PatientDetailsFprDoctorSerializer(all_patients, many=True).data
+            reviews_serialized_data = PatientDetailsWithUserDoctorSerializer(all_patients, many=True).data
             return Response({"result" : "success", "data": reviews_serialized_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
@@ -618,3 +619,32 @@ class ageGraphsFetch(APIView):
             return Response({"result": "success", "message": "Lab Report Uploaded Successfully", "data":data_check}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+
+class AppointmentActionHospital(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            HospitalManager.appointment_action_hospital(request, data)
+            return Response({"result": "success", "message": "Request has been applied successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+
+class FetchAllRevenueHospital(APIView):
+    permission_classes = [IsAuthenticatedHospital]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            hospital_data = DoctorsManagement.fetch_all_revenue_hospital(request, data)
+            appointment_data = AppointmentWithDepartmentandDoctorWithRevenueSerializer(hospital_data, many=True).data
+            return Response({"result": "success", "data": appointment_data}, 200)
+        except Exception as e:
+            return Response({"result": "failure", "message": str(e)}, 500)

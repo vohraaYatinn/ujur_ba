@@ -27,7 +27,7 @@ class UserManager:
         email = data.get('email', False)
         password = data.get("password", False)
         filters = Q()
-        filters &= Q(email=email) | Q(user_patient_table__ujur_id=email)
+        filters &= Q(email=email) | Q(user_patient_table__ujur_id=email) | Q(phone=email)
         filters &= Q(password=password)
         check_if_user_exist = UsersDetails.objects.filter(filters)
         if check_if_user_exist:

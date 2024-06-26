@@ -9,11 +9,16 @@ from django.utils import timezone
 from django.db.models import Q
 from django.db.models import F
 from django.utils.timezone import now, timedelta
+import razorpay
 
 
 from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName, HospitalAdmin
 from patients.models import Patient
+from ujurbackend import settings
 from users.models import UsersDetails
+
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 
 class DoctorsManagement:
@@ -174,6 +179,43 @@ class DoctorsManagement:
         ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").order_by("-created_at")
         return appointments
 
+    @staticmethod
+    def fetch_all_revenue_hospital(request, data):
+        filters = Q()
+        patient_name = data.get('patientName', False)
+        doctor_name = data.get('doctorName', False)
+        date = data.get('date', False)
+        slots = data.get('slots', False)
+        status = data.get('status', False)
+        department = data.get('department', False)
+        hospitals = request.user.hospital
+        paymentStatus = data.get('paymentStatus', False)
+        startDate = data.get('startDate', False)
+        endDate = data.get('endDate', False)
+        if patient_name:
+            filters &= Q(patient__full_name__icontains = patient_name)
+        if doctor_name:
+            filters &= Q(doctor__full_name__icontains = doctor_name)
+        if date:
+            filters &= Q(date_appointment__date=date)
+        if slots:
+            filters &= Q(slot=slots)
+        if status:
+            filters &= Q(status=status)
+        if department:
+            filters &= Q(doctor__department=department)
+        if hospitals:
+            filters &= Q(doctor__hospital=hospitals)
+        if paymentStatus:
+            filters &= Q(payment_status=paymentStatus)
+        if startDate:
+            filters &= Q(date_appointment__date__gt=startDate)
+        if endDate:
+            filters &= Q(date_appointment__date__lt=endDate)
+        appointments = Appointment.objects.filter(filters
+        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").order_by("-created_at")
+        return appointments
+
 
     @staticmethod
     def patient_doctor_reviews(request, data):
@@ -244,7 +286,7 @@ class DoctorsManagement:
         if department:
             filters &= Q(doctor__department=department)
         patient_ids = Appointment.objects.filter(filters).values('patient').distinct()
-        unique_patients = Patient.objects.filter(id__in=patient_ids).order_by("-created_at")
+        unique_patients = Patient.objects.filter(id__in=patient_ids).order_by("-created_at").select_related("user")
         return unique_patients
 
 
@@ -425,7 +467,7 @@ class DoctorsManagement:
         if appointment_id:
             latest_appointment = Appointment.objects.filter(
                 id=appointment_id
-            ).select_related("doctor").select_related("patient").select_related("doctor__hospital").order_by("-created_at")
+            ).select_related("doctor").select_related("patient").select_related("doctor__hospital").prefetch_related("revenues").order_by("-created_at")
             slot = latest_appointment[0].slot
             date = latest_appointment[0].date_appointment
 
@@ -481,7 +523,7 @@ class DoctorsManagement:
             filters &= Q(status=status)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").select_related("patient").order_by("-created_at")
+        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").prefetch_related("revenues").select_related("patient", "patient__user").order_by("-created_at")
         return doctor_leave
 
     @staticmethod
@@ -860,6 +902,17 @@ class DoctorsManagement:
                 doc_obj[0].status = "APPROVED"
                 doc_obj[0].doctor.is_active = False
                 doc_obj[0].doctor.save()
+                req_appointment = Appointment.objects.filter(date_appointment__lte=doc_obj[0].to_date, date_appointment__gte=doc_obj[0].from_date, doctor=doc_obj[0].doctor, status="pending")
+                for range in req_appointment:
+                    range.status = "cancel"
+                    range.payment_status = "Refund"
+                    range.cancel_reason = "Appointment cancelled by hospital"
+                    if range.razorpay_payment_id:
+                        try:
+                            razorpay_client.payment.refund(range.razorpay_payment_id)
+                        except:
+                            pass
+                    range.save()
             else:
                 doc_obj[0].doctor.is_active = True
                 doc_obj[0].doctor.save()

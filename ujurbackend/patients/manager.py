@@ -262,7 +262,7 @@ class PatientManager:
             amount = data.get("amount")
             client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
             DATA = {
-                "amount": int(amount)*100,
+                "amount": float(amount)*100,
                 "currency": "INR",
                 "receipt": "receipt#1",
             }
@@ -274,18 +274,22 @@ class PatientManager:
     @staticmethod
     def verify_payment_check(request, data):
         try:
+            bookingId = data.get("bookingId")
             data = data['data']
             json_string = json.loads(data)
             razorpay_order_id = json_string['response'].get("razorpay_order_id")
             razorpay_payment_id = json_string['response'].get("razorpay_payment_id")
             razorpay_signature = json_string['response'].get("razorpay_signature")
             client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+            required_appointment = Appointment.objects.get(id=bookingId)
             try:
                 verify_payment = client.utility.verify_payment_signature({
                     'razorpay_order_id': razorpay_order_id,
                     'razorpay_payment_id': razorpay_payment_id,
                     'razorpay_signature': razorpay_signature
                 })
+                required_appointment.razorpay_payment_id = razorpay_payment_id
+                required_appointment.save()
             except:
                 verify_payment = False
             return verify_payment
@@ -302,8 +306,14 @@ class PatientManager:
                 req_appointment =  Appointment.objects.filter(patient__id =patient_id, id=appointment_id )
                 if req_appointment and req_appointment[0].status != "cancel":
                     req_appointment[0].status = "cancel"
+                    req_appointment[0].payment_status = "Refund"
                     req_appointment[0].cancel_reason=reason
                     req_appointment[0].save()
+                try:
+                    if req_appointment[0].razorpay_payment_id:
+                        razorpay_client.payment.refund(req_appointment[0].razorpay_payment_id)
+                except:
+                    raise Exception("Due to technical glitch We are facing some issue in refunding the payment, Please ask customer support")
             else:
                 raise Exception("Something went wrong")
         except:

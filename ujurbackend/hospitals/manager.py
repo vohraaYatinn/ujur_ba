@@ -1,3 +1,4 @@
+import razorpay
 from django.db.models import Q, Count, Avg
 
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
@@ -7,7 +8,10 @@ from patients.models import Patient
 from django.utils.timezone import now
 from datetime import datetime, timedelta
 
+from ujurbackend import settings
 
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 
 class HospitalManager:
@@ -302,6 +306,29 @@ class HospitalManager:
         adminId = data.get("adminId")
         if adminId:
             req_admin = HospitalAdmin.objects.get(id=adminId, hospital_id=request.user.hospital)
+            req_admin.save()
+
+        else:
+            raise Exception("Something Went Wrong")
+
+    @staticmethod
+    def appointment_action_hospital(request, data):
+        appointment_id = data.get("selectedAppointment")
+        action = data.get("action")
+        if appointment_id and action:
+            req_admin = Appointment.objects.get(id=appointment_id)
+            if action == "cancel":
+                req_admin.status = "cancel"
+                req_admin.cancel_reason = "Appointment cancelled by hospital"
+                if req_admin.razorpay_payment_id:
+                    try:
+                        razorpay_client.payment.refund(req_admin.razorpay_payment_id)
+                    except:
+                        pass
+            if action == "Paid":
+                req_admin.payment_status = "Paid"
+            if action == "Not Paid":
+                req_admin.payment_status = "Not Paid"
             req_admin.save()
 
         else:
