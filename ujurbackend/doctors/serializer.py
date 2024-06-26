@@ -124,7 +124,7 @@ class RevenueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Revenue
         fields = "__all__"
-        
+
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor = DoctorModelSerializer()
     class Meta:
