@@ -322,7 +322,8 @@ class HospitalManager:
                 req_admin.cancel_reason = "Appointment cancelled by hospital"
                 if req_admin.razorpay_payment_id:
                     try:
-                        razorpay_client.payment.refund(req_admin.razorpay_payment_id)
+                        if req_admin.razorpay_payment_id:
+                            razorpay_client.payment.refund(req_admin.razorpay_payment_id)
                     except:
                         pass
             if action == "Paid":

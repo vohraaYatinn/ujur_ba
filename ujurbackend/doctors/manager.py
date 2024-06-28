@@ -139,7 +139,7 @@ class DoctorsManagement:
         if paymentStatus:
             filters &= Q(payment_status=paymentStatus)
         appointments = Appointment.objects.filter(filters
-        ).select_related("doctor", "patient", "patient__user").order_by("-created_at")
+        ).select_related("doctor", "patient", "patient__user","doctor__hospital").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
 
     @staticmethod
@@ -153,6 +153,7 @@ class DoctorsManagement:
         department = data.get('department', False)
         hospitals = data.get('hospitalSearch', False)
         paymentStatus = data.get('paymentStatus', False)
+        paymentMode = data.get('paymentMode', False)
         startDate = data.get('startDate', False)
         endDate = data.get('endDate', False)
         if patient_name:
@@ -171,12 +172,14 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if paymentStatus:
             filters &= Q(payment_status=paymentStatus)
+        if paymentMode:
+            filters &= Q(payment_mode=paymentMode)
         if startDate:
             filters &= Q(date_appointment__date__gt=startDate)
         if endDate:
             filters &= Q(date_appointment__date__lt=endDate)
         appointments = Appointment.objects.filter(filters
-        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").order_by("-created_at")
+        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
 
     @staticmethod
@@ -190,6 +193,7 @@ class DoctorsManagement:
         department = data.get('department', False)
         hospitals = request.user.hospital
         paymentStatus = data.get('paymentStatus', False)
+        paymentMode = data.get('paymentMode', False)
         startDate = data.get('startDate', False)
         endDate = data.get('endDate', False)
         if patient_name:
@@ -208,12 +212,14 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if paymentStatus:
             filters &= Q(payment_status=paymentStatus)
+        if paymentMode:
+            filters &= Q(payment_mode=paymentMode)
         if startDate:
             filters &= Q(date_appointment__date__gt=startDate)
         if endDate:
             filters &= Q(date_appointment__date__lt=endDate)
         appointments = Appointment.objects.filter(filters
-        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").order_by("-created_at")
+        ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
 
 
@@ -523,7 +529,7 @@ class DoctorsManagement:
             filters &= Q(status=status)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor").prefetch_related("revenues").select_related("patient", "patient__user").order_by("-created_at")
+        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor", "doctor__hospital").prefetch_related("revenues").select_related("patient", "patient__user").order_by("-created_at", "appointment_slot")
         return doctor_leave
 
     @staticmethod
@@ -909,7 +915,8 @@ class DoctorsManagement:
                     range.cancel_reason = "Appointment cancelled by hospital"
                     if range.razorpay_payment_id:
                         try:
-                            razorpay_client.payment.refund(range.razorpay_payment_id)
+                            if range.razorpay_payment_id:
+                                razorpay_client.payment.refund(range.razorpay_payment_id)
                         except:
                             pass
                     range.save()

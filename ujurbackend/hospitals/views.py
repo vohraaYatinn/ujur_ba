@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from admin_hospital.serializer import HospitalAdminsSerailizer, HospitalReviewsWithPatientsSerializer, \
-    AppointmentWithDepartmentandDoctorWithRevenueSerializer
+    AppointmentWithDepartmentandDoctorWithRevenueSerializer, AppointmentWithDepartmentandDoctorHospitalSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorUserSerializer, DoctorSerializer, DoctorAverageUserSerializer, \
     resetPasswordsDoctor, LeaveSerializer, LeaveDoctorSerializer, AppointmentWithDepartmentSerializer, \
@@ -183,7 +183,7 @@ class FetchHospitalAppointments(APIView):
         try:
             data = request.query_params
             appointment_objs = DoctorsManagement.fetch_hospital_appointments(request, data)
-            latest_appointment_data = AppointmentUserSerializer(appointment_objs, many=True).data
+            latest_appointment_data = AppointmentWithDepartmentandDoctorHospitalSerializer(appointment_objs, many=True).data
             return Response(
                 {"result": "success", "data": latest_appointment_data}, 200)
         except Exception as e:

@@ -148,6 +148,17 @@ class AppointmentWithDepartmentandDoctorWithRevenueSerializer(serializers.ModelS
 class AppointmentWithDepartmentandDoctorSerializer(serializers.ModelSerializer):
     doctor = DoctorModelWithDepartmentSerializer()
     patient = PatientDetailsWithUserDoctorSerializer()
+
+    class Meta:
+        model = Appointment
+        fields = "__all__"
+
+class AppointmentWithDepartmentandDoctorHospitalSerializer(serializers.ModelSerializer):
+    doctor = DoctorModelWithDepartmentHospitalSerializer()
+    patient = PatientDetailsWithUserDoctorSerializer()
+    revenues = RevenueSerializer(many=True)
+
+
     class Meta:
         model = Appointment
         fields = "__all__"
