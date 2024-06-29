@@ -39,6 +39,16 @@ class DoctorModelWithDepartmentHospitalSerializer(serializers.ModelSerializer):
         model = doctorDetails
         fields = "__all__"
 
+class DoctorModelWithDepartmentHospitalWithKeysSerializer(serializers.ModelSerializer):
+    department = DepartmentSerializer()
+    hospital = HospitalDoctorSerializer()
+    avg_reviews = serializers.FloatField()
+    total_reviews = serializers.IntegerField()
+
+    class Meta:
+        model = doctorDetails
+        fields = "__all__"
+
 class DoctorModelWithHospitalSerializer(serializers.ModelSerializer):
     hospital = HospitalDoctorSerializer()
 
@@ -175,7 +185,7 @@ class AppointmentWithDoctorSerializer(serializers.ModelSerializer):
 
 
 class AppointmentWithDoctorAndPatientSerializer(serializers.ModelSerializer):
-    patient = PatientDetailsFprDoctorSerializer()
+    patient = PatientDetailsWithUserDoctorSerializer()
     doctor = DoctorHospitalSerializer()
     revenues = RevenueSerializer(many=True)
 

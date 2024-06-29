@@ -6,6 +6,12 @@ from patients.models import Patient
 
 
 
+class DoctorSerializer(serializers.ModelSerializer):
+    avg_reviews = serializers.FloatField()
+    total_reviews = serializers.IntegerField()
+    class Meta:
+        model = doctorDetails
+        fields = "__all__"
 
 class HospitalAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,7 +59,7 @@ class HospitalSerializerWithDoctorsAndAccount(serializers.ModelSerializer):
         fields = "__all__"
 
 class HospitalSerializerWithRatingDoctors(serializers.ModelSerializer):
-    hospital_doctors = DoctorModelForHospitalSerializer(many=True)
+    hospital_doctors_check = DoctorSerializer(many=True)
     average_review_stars = serializers.FloatField()
     total_review_stars = serializers.IntegerField()
     class Meta:

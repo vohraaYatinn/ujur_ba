@@ -105,7 +105,7 @@ class PatientDoctorReviews(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patient_reviews")
     doctor = models.ForeignKey(doctorDetails, on_delete=models.CASCADE,  related_name="doctor_reviews")
     reviews_star = models.IntegerField()
-    comment = models.TextField()
+    comment = models.TextField(null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

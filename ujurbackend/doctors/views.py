@@ -8,7 +8,8 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     AppointmentWithDoctorSerializer, DoctorReviewsWithPatientsSerializer, DoctorUserSerializer, \
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
-    checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer
+    checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer, \
+    DoctorModelWithDepartmentHospitalWithKeysSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer
 
@@ -572,7 +573,7 @@ class getAllDoctorsPatient(APIView):
         try:
             data = request.query_params
             patients_obj = DoctorsManagement.all_doctor_patients(request, data)
-            all_patients = DoctorModelWithDepartmentHospitalSerializer(patients_obj, many=True).data
+            all_patients = DoctorModelWithDepartmentHospitalWithKeysSerializer(patients_obj, many=True).data
 
             return Response(
                 {"result": "success", "data": all_patients}, 200)

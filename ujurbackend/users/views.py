@@ -29,6 +29,12 @@ class PhoneOtpVerify(APIView):
             token = False
             if user_exist == "user exists":
                 email = data.get('email', False)
+                if len(email) == 10:
+                    try:
+                        int_email = int(email)
+                        email = "+91-" + str(email)
+                    except ValueError:
+                        pass
                 filters = Q()
                 filters &= Q(user__email=email) | Q(ujur_id=email) | Q(user__phone=email)
                 filters &= Q(created_by=None) | Q(created_by=F('id'))
@@ -41,6 +47,6 @@ class PhoneOtpVerify(APIView):
 
                 return Response({"result" : "success", "userType":user_exist, "token":token, "patient":patient_data}, 200)
             else:
-                return Response({"result" : "failure", "message":"Invalid Username or Password"}, 200)
+                return Response({"result" : "failure", "message":"Invalid  Mobile No/UJUR ID or Password"}, 200)
         except Exception as err:
             return Response(str(err), 500)

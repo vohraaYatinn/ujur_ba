@@ -25,6 +25,12 @@ class UserManager:
     @staticmethod
     def phone_otp_verify(data):
         email = data.get('email', False)
+        if len(email) == 10:
+            try:
+                int_email = int(email)
+                email = "+91-" + str(email)
+            except ValueError:
+                pass
         password = data.get("password", False)
         filters = Q()
         filters &= Q(email=email) | Q(user_patient_table__ujur_id=email) | Q(phone=email)

@@ -4,6 +4,8 @@ from doctors.models import doctorDetails, doctorSlots, FavDoctors, Appointment, 
     ResetPasswordRequest, HospitalPatientReviews, Revenue
 from django.db.models import Avg, Count, Prefetch
 from django.db.models.functions import Round
+from django.db import transaction
+
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
@@ -122,6 +124,7 @@ class DoctorsManagement:
         department = data.get('department', False)
         hospitals = data.get('hospitalSearch', False)
         paymentStatus = data.get('paymentStatus', False)
+        paymentMode = data.get('paymentMode', False)
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
@@ -138,6 +141,8 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if paymentStatus:
             filters &= Q(payment_status=paymentStatus)
+        if paymentMode:
+            filters &= Q(payment_mode=paymentMode)
         appointments = Appointment.objects.filter(filters
         ).select_related("doctor", "patient", "patient__user","doctor__hospital").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
@@ -355,7 +360,7 @@ class DoctorsManagement:
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment__date=date,
                     slot=slot
-                    )
+                    ).exclude(status="created")
             latest_appointment = latest_appointment_slot.order_by('-created_at').first()
             if latest_appointment:
                 latest_slot = latest_appointment.appointment_slot
@@ -372,7 +377,6 @@ class DoctorsManagement:
                 appointment = Appointment.objects.create(
                     patient_id=patient_id,
                     doctor_id=doctor_id,
-                    appointment_slot=int(latest_slot)+1,
                     slot=slot,
                     date_appointment=date,
                     patients_query=comment
@@ -418,15 +422,26 @@ class DoctorsManagement:
         paymentMode = data.get("paymentMode")
         bookingAmount = data.get("bookingAmount")
         payment_status = "Not Paid"
+
         if paymentMode == "Online":
             payment_status = "Paid"
         if booking_id:
             appointment = Appointment.objects.filter(
                 id=booking_id
             ).select_related("doctor")[0]
+            latest_appointment_slot = Appointment.objects.filter(
+                    date_appointment=appointment.date_appointment,
+                    slot=appointment.slot
+                    ).exclude(status="created")
+            latest_appointment = latest_appointment_slot.order_by('-created_at').first()
+            if latest_appointment:
+                latest_slot = latest_appointment.appointment_slot
+            else:
+                latest_slot = 0
             appointment.status = "pending"
             appointment.payment_mode = paymentMode
             appointment.payment_status = payment_status
+            appointment.appointment_slot = int(latest_slot) + 1
             appointment.save()
             Revenue.objects.create(appointment=appointment,booking_amount=17.7, doctor_fees=float(bookingAmount)-17.7)
             return True, appointment
@@ -438,7 +453,8 @@ class DoctorsManagement:
         patient_id = request.user.id
         if patient_id:
             latest_appointment = Appointment.objects.filter(
-                patient_id=patient_id
+                patient_id=patient_id,
+                status="pending"
             ).select_related("doctor").exclude(status="created").order_by("-created_at")
             if latest_appointment:
                 return latest_appointment[0]
@@ -473,7 +489,7 @@ class DoctorsManagement:
         if appointment_id:
             latest_appointment = Appointment.objects.filter(
                 id=appointment_id
-            ).select_related("doctor").select_related("patient").select_related("doctor__hospital").prefetch_related("revenues").order_by("-created_at")
+            ).select_related("doctor").select_related("patient", "patient__user").select_related("doctor__hospital").prefetch_related("revenues").order_by("-created_at")
             slot = latest_appointment[0].slot
             date = latest_appointment[0].date_appointment
 
@@ -517,6 +533,13 @@ class DoctorsManagement:
         slots = data.get('slots', False)
         status = data.get('status', False)
         department = data.get('department', False)
+        paymentStatus = data.get('paymentStatus', False)
+        paymentMode = data.get('paymentMode', False)
+
+        if paymentStatus:
+            filters &= Q(payment_status=paymentStatus)
+        if paymentMode:
+            filters &= Q(payment_mode=paymentMode)
         if patient_name:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
@@ -730,7 +753,10 @@ class DoctorsManagement:
     @staticmethod
     def all_doctor_patients(request, data):
         number_of_page = data.get("pageNumber", 1)
-        return doctorDetails.objects.filter().prefetch_related("department", "hospital")[:int(number_of_page)*20]
+        return doctorDetails.objects.filter().annotate(
+                avg_reviews=Round(Avg("doctor_reviews__reviews_star"),1),
+                total_reviews=Count("doctor_reviews__id")
+            ).prefetch_related("doctor_slots").prefetch_related("department", "hospital")[:int(number_of_page)*20]
 
     @staticmethod
     def all_hospital_patients(request, data):
@@ -929,6 +955,7 @@ class DoctorsManagement:
 
 
     @staticmethod
+    @transaction.atomic
     def add_new_doctor_hospital(request, data):
         hospital_id = request.user.hospital
         hospital_admin_id = data.get("HospitalsId", False)
@@ -954,6 +981,24 @@ class DoctorsManagement:
         eveningTime = data.get("eveningTime", None)
         afternoonTime = data.get("afternoonTime", None)
         license = data.get("license", None)
+        hospital_details = HospitalAdmin.objects.get(hospital_id=hospital_id)
+        latest_ujur_id = False
+        new_id_to_add = ""
+        if hospital_id:
+            try:
+                latest_hospital_admin = doctorDetails.objects.filter(hospital_id=hospital_id).latest('id')
+                latest_ujur_id = latest_hospital_admin.ujur_id
+            except doctorDetails.DoesNotExist:
+                new_id_to_add = hospital_details.ujur_id + "D1"
+            if latest_ujur_id:
+                reversed_s = latest_ujur_id[::-1]
+                d_index = reversed_s.index('D')
+                number_reversed = reversed_s[:d_index]
+                number = int(number_reversed[::-1])
+                number += 1
+                new_id_to_add = hospital_details.ujur_id + "D" + str(number)
+            else:
+                new_id_to_add = hospital_details.ujur_id + "D1"
         if hospital_id:
             user = UsersDetails.objects.create(email=email,phone=phone)
             slots = False
@@ -965,6 +1010,7 @@ class DoctorsManagement:
                 slots = True
             if slots:
                 doctor_obj = doctorDetails.objects.create(
+                    ujur_id=new_id_to_add,
                     user=user,
                     email=email,
                     password="demo@123",
@@ -1266,8 +1312,8 @@ class DoctorsManagement:
     def add_reviews_patient(request, data):
         appointmentId = data.get("appointmentId")
         rating = data.get("rating")
-        comment = data.get("comment")
-        if appointmentId and rating and comment:
+        comment = data.get("comment", None)
+        if appointmentId and rating:
             appointment_old = Appointment.objects.get(id=appointmentId)
             get_old_review = PatientDoctorReviews.objects.filter(patient_id=request.user.id, doctor_id=appointment_old.doctor_id)
             if get_old_review:
@@ -1293,8 +1339,8 @@ class DoctorsManagement:
     def add_reviews_patient_hospital(request, data):
         appointmentId = data.get("appointmentId")
         rating = data.get("rating")
-        comment = data.get("comment")
-        if appointmentId and rating and comment:
+        comment = data.get("comment", None)
+        if appointmentId and rating:
             appointment_old = Appointment.objects.get(id=appointmentId)
             get_old_review = HospitalPatientReviews.objects.filter(patient_id=request.user.id, hospital_id=appointment_old.doctor.hospital_id)
             if get_old_review:

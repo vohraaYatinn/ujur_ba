@@ -107,6 +107,8 @@ class PatientManager:
             date_of_birth = data.get("dob")
             district = data.get("district")
             block = data.get("block")
+            if not(user_created and full_name and gender and date_of_birth and district and block):
+                raise Exception("All Fields are required")
 
             patient = Patient.objects.get(id=user_created)
             if patient.created_by:

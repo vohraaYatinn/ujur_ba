@@ -1,5 +1,6 @@
 import razorpay
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Prefetch
+from django.db.models.functions import Round
 
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
@@ -85,6 +86,7 @@ class HospitalManager:
         logo = data.get("logo", None)
         profile = data.get("profile", None)
         google_maps = data.get("googleMap", None)
+        years_of_establishment = data.get("years_of_establishment", None)
 
         if hospital_name:
             hospital_obj.name=hospital_name
@@ -104,6 +106,8 @@ class HospitalManager:
             hospital_obj.address=address
         if google_maps:
             hospital_obj.google_link=google_maps
+        if years_of_establishment:
+            hospital_obj.years_of_establishment=years_of_establishment
         hospital_obj.save()
 
 
@@ -127,7 +131,7 @@ class HospitalManager:
         filters = Q()
         if hospitals:
             filters &= Q(id=hospitals)
-        return HospitalDetails.objects.filter(filters).order_by("-created_at").prefetch_related("hospital_details_account")
+        return HospitalDetails.objects.filter(filters).order_by("created_at").prefetch_related("hospital_details_account")
 
     @staticmethod
     def fetch_lab_reports(request):
@@ -281,7 +285,8 @@ class HospitalManager:
     @staticmethod
     def fetch_doctors_hospital_patient(dataReq, data):
         filters = Q(id=data.get("hospitalId"))
-        return HospitalDetails.objects.filter(filters).annotate(
+        prefetch_check = Prefetch("hospital_doctors", doctorDetails.objects.filter().annotate(avg_reviews=Round(Avg("doctor_reviews__reviews_star"),1),total_reviews=Count("doctor_reviews__id")), to_attr="hospital_doctors_check")
+        return HospitalDetails.objects.filter(filters).prefetch_related(prefetch_check).annotate(
     average_review_stars=Avg('hospital_reviews__reviews_star'),
             total_review_stars=Count('hospital_reviews__id')
 )[0]
