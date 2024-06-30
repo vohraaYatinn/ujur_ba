@@ -652,7 +652,7 @@ class DoctorsManagement:
 
             total_count = sum(appt['count'] for appt in appointments)
             pending_count = sum(appt['count'] for appt in appointments if appt['status'] == 'pending')
-            canceled_count = sum(appt['count'] for appt in appointments if appt['status'] == 'canceled')
+            canceled_count = sum(appt['count'] for appt in appointments if appt['status'] == 'cancel')
             completed_count = sum(appt['count'] for appt in appointments if appt['status'] == 'completed')
 
             total.append(int(total_count))
@@ -848,7 +848,9 @@ class DoctorsManagement:
                 doctor_obj[0].user.phone = phone_number
             if bio:
                 doctor_obj[0].bio = bio
+            doctor_obj[0].user.save()
             doctor_obj[0].save()
+
         else:
             raise Exception("You are missing something")
     @staticmethod

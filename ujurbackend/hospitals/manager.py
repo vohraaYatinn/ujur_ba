@@ -104,8 +104,7 @@ class HospitalManager:
             hospital_obj.description=description
         if address:
             hospital_obj.address=address
-        if google_maps:
-            hospital_obj.google_link=google_maps
+        hospital_obj.google_link=google_maps
         if years_of_establishment:
             hospital_obj.years_of_establishment=years_of_establishment
         hospital_obj.save()
@@ -228,8 +227,7 @@ class HospitalManager:
                 hospital_proj.website = website
             if description:
                 hospital_proj.description = description
-            if google_link:
-                hospital_proj.google_link = google_link
+            hospital_proj.google_link = google_link
             hospital_proj.save()
         else:
             raise Exception("Something is missing or duplicate entry, Please check email and phone number should be unique and not in use, Hospital image should be added")
