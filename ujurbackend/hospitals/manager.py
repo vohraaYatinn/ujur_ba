@@ -8,6 +8,8 @@ from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, Departm
 from patients.models import Patient
 from django.utils.timezone import now
 from datetime import datetime, timedelta
+from django.db import transaction
+
 
 from ujurbackend import settings
 
@@ -167,6 +169,7 @@ class HospitalManager:
 
 
     @staticmethod
+    @transaction.atomic
     def add_department_hospital(request, data):
         department_id = data.get("department_id", False)
         if not department_id:
@@ -197,6 +200,7 @@ class HospitalManager:
 
 
     @staticmethod
+    @transaction.atomic
     def add_admin_hospital(request, data):
         hospital_name = data.get("hospitalName", None)
         email = data.get("email", None)
@@ -238,6 +242,7 @@ class HospitalManager:
         return HospitalAdmin.objects.filter(filters).select_related("hospital").order_by("-created_at")
 
     @staticmethod
+    @transaction.atomic
     def add_hospital_admin_data(request, data):
         full_name = data.get("fullName", None)
         email = data.get("email", None)
@@ -255,6 +260,7 @@ class HospitalManager:
         return MedicinesName.objects.filter(hospital=request.user.hospital)
 
     @staticmethod
+    @transaction.atomic
     def add_medicines_hospital(request, data):
         medicines_name = data.get("name", None)
         medicines_description = data.get("description", None)
@@ -271,6 +277,7 @@ class HospitalManager:
         return ReferToDoctors.objects.filter(hospital=request.user.hospital)
 
     @staticmethod
+    @transaction.atomic
     def add_refer_to_hospital(request, data):
         doctor_name = data.get("doctorName")
         hospital_name = data.get("hospitalName")

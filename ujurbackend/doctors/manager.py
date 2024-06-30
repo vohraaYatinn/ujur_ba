@@ -302,6 +302,7 @@ class DoctorsManagement:
 
 
     @staticmethod
+    @transaction.atomic
     def add_patients_hospital(request, data):
         try:
             phone_number = data.get("phoneNumber")
@@ -348,6 +349,7 @@ class DoctorsManagement:
             raise Exception("It Looks like you have missed something, Please try again")
 
     @staticmethod
+    @transaction.atomic
     def patient_appointment_book(request, data):
         patient_id = request.user.id
         doctor_id = data.get("doctorId")
@@ -417,6 +419,7 @@ class DoctorsManagement:
             raise Exception("It Looks like you have missed something, Please try again")
 
     @staticmethod
+    @transaction.atomic
     def patient_booking_confirmation(data):
         booking_id = data.get("bookingId")
         paymentMode = data.get("paymentMode")
@@ -1044,6 +1047,7 @@ class DoctorsManagement:
                 raise Exception("Slots, Timings and Price is Mandatory")
 
     @staticmethod
+    @transaction.atomic
     def add_new_admin_doctor_hospital(request, data):
         hospital_admin_id = data.get("HospitalsId", False)
         hospital_id=False
@@ -1204,6 +1208,7 @@ class DoctorsManagement:
         return Department.objects.filter()
 
     @staticmethod
+    @transaction.atomic
     def add_hospital_department(request, data):
         department_id = data.get("departmentId")
         department_name = data.get("departmentName")
@@ -1224,6 +1229,7 @@ class DoctorsManagement:
             )
 
     @staticmethod
+    @transaction.atomic
     def add_hospital_admin(request, data):
         department_name = data.get("departmentName")
         department_description = data.get("departmentComments", None)
@@ -1311,6 +1317,7 @@ class DoctorsManagement:
                 description = medicines_description
             )
     @staticmethod
+    @transaction.atomic
     def add_reviews_patient(request, data):
         appointmentId = data.get("appointmentId")
         rating = data.get("rating")
@@ -1337,7 +1344,9 @@ class DoctorsManagement:
 
         else:
             raise Exception("Something went Wrong")
+
     @staticmethod
+    @transaction.atomic
     def add_reviews_patient_hospital(request, data):
         appointmentId = data.get("appointmentId")
         rating = data.get("rating")

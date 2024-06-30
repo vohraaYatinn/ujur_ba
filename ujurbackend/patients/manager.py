@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 import json
 
@@ -17,6 +17,7 @@ razorpay_client = razorpay.Client(
 
 class PatientManager:
     @staticmethod
+    @transaction.atomic
     def patient_signup(requests, data):
         try:
             profile_photo = data.get("document")
@@ -99,6 +100,7 @@ class PatientManager:
             pass
 
     @staticmethod
+    @transaction.atomic
     def add_new_patient(requests, data):
         try:
             user_created = requests.user.id

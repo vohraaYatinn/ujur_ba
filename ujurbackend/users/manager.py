@@ -1,5 +1,6 @@
 import random
 
+from django.db import transaction
 from django.db.models import Q
 
 from common_constants import CommonConstants
@@ -8,6 +9,7 @@ from users.models import otpPhone, UsersDetails
 
 class UserManager:
     @staticmethod
+    @transaction.atomic
     def phone_otp_send(data):
         phone_number = data.get('phoneNumber', False)
         otp = random.randint(10000,99999)
