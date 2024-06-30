@@ -216,7 +216,7 @@ class FetchDoctorLeaveRequests(APIView):
             return Response({"result" : "failure", "message":str(e)}, 500)
 
 class FetchHospitalDepartments(APIView):
-    permission_classes = [IsAuthenticatedHospital]
+    permission_classes = []
 
     @staticmethod
     def get(request):

@@ -150,7 +150,10 @@ class HospitalManager:
     @staticmethod
     def fetch_hospital_departments(request, data):
         department = data.get('department', False)
-        filters = Q(hospital_id=request.user.hospital)
+        hospitalId = data.get('hospitalId', False)
+        if not hospitalId:
+            hospitalId = request.user.hospital
+        filters = Q(hospital_id=hospitalId)
         if department:
             filters &= Q(department_id=department)
         return DepartmentHospitalMapping.objects.filter(filters).select_related("department")

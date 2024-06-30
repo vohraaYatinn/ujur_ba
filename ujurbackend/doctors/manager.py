@@ -650,7 +650,7 @@ class DoctorsManagement:
             index += 1
             appointments = Appointment.objects.filter(
                 doctor_id=request.user.doctor,
-                date_appointment=current_date.date(),
+                date_appointment__date=current_date.date(),
             ).values('status').annotate(count=Count('status'))
 
             total_count = sum(appt['count'] for appt in appointments)
@@ -847,6 +847,7 @@ class DoctorsManagement:
         if doctor_obj:
             if email:
                 doctor_obj[0].user.email = email
+                doctor_obj[0].email = email
             if phone_number:
                 doctor_obj[0].user.phone = phone_number
             if bio:
@@ -1418,10 +1419,10 @@ class DoctorsManagement:
         elif timeframe == 'Month':
             start_date = today.replace(day=1)
             date_range = [
-                (start_date + timedelta(days=0), start_date + timedelta(days=7)),
-                (start_date + timedelta(days=8), start_date + timedelta(days=15)),
+                (start_date + timedelta(days=0), start_date + timedelta(days=8)),
+                (start_date + timedelta(days=9), start_date + timedelta(days=15)),
                 (start_date + timedelta(days=16), start_date + timedelta(days=23)),
-                (start_date + timedelta(days=23), start_date + timedelta(days=30))
+                (start_date + timedelta(days=24), start_date + timedelta(days=30))
             ]
 
             for start, end in date_range:
@@ -1505,10 +1506,10 @@ class DoctorsManagement:
         elif timeframe == 'Month':
             start_date = today.replace(day=1)
             date_range = [
-                (start_date + timedelta(days=0), start_date + timedelta(days=7)),
-                (start_date + timedelta(days=8), start_date + timedelta(days=15)),
+                (start_date + timedelta(days=0), start_date + timedelta(days=8)),
+                (start_date + timedelta(days=9), start_date + timedelta(days=15)),
                 (start_date + timedelta(days=16), start_date + timedelta(days=23)),
-                (start_date + timedelta(days=23), start_date + timedelta(days=30))
+                (start_date + timedelta(days=24), start_date + timedelta(days=30))
             ]
 
             for start, end in date_range:
@@ -1604,10 +1605,10 @@ class DoctorsManagement:
         elif timeframe == 'month':
             start_date = today.replace(day=1)
             date_range = [
-                (start_date + timedelta(days=0), start_date + timedelta(days=6)),
-                (start_date + timedelta(days=7), start_date + timedelta(days=13)),
-                (start_date + timedelta(days=14), start_date + timedelta(days=20)),
-                (start_date + timedelta(days=21), start_date + timedelta(days=27))
+                (start_date + timedelta(days=0), start_date + timedelta(days=8)),
+                (start_date + timedelta(days=9), start_date + timedelta(days=15)),
+                (start_date + timedelta(days=16), start_date + timedelta(days=23)),
+                (start_date + timedelta(days=24), start_date + timedelta(days=30))
             ]
 
             for start, end in date_range:
