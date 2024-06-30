@@ -231,7 +231,8 @@ class HospitalManager:
                 hospital_proj.website = website
             if description:
                 hospital_proj.description = description
-            hospital_proj.google_link = google_link
+            if google_link:
+                hospital_proj.google_link = google_link
             hospital_proj.save()
         else:
             raise Exception("Something is missing or duplicate entry, Please check email and phone number should be unique and not in use, Hospital image should be added")
