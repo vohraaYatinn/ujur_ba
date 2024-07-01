@@ -266,7 +266,7 @@ class PatientManager:
             amount = data.get("amount")
             client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
             DATA = {
-                "amount": float(amount)*100,
+                "amount": int(float(amount)*100),
                 "currency": "INR",
                 "receipt": "receipt#1",
             }
