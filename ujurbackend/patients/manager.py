@@ -272,8 +272,8 @@ class PatientManager:
             }
             req_order = client.order.create(data=DATA)
             return req_order
-        except:
-            raise Exception("Something went wrong")
+        except Exception as e:
+            raise Exception(str(e))
 
     @staticmethod
     def verify_payment_check(request, data):
