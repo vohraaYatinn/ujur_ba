@@ -499,7 +499,7 @@ class DoctorsManagement:
             if latest_appointment:
                 slots = doctorSlots.objects.get(doctor=latest_appointment[0].doctor)
                 return latest_appointment[0], slots, Appointment.objects.filter(date_appointment=date, slot=slot
-                           ).count()
+                           ).exclude(status="created").exclude(status="cancel").count()
             else:
                 return []
         else:
@@ -692,7 +692,7 @@ class DoctorsManagement:
             filters & Q(status="pending")
         ).select_related("patient").order_by("date_appointment")
         canceled_appointments = Appointment.objects.filter(
-            filters & Q(status="canceled")
+            filters & Q(status="cancel")
         ).select_related("patient").order_by("date_appointment")
         completed_appointments = Appointment.objects.filter(
             filters & Q(status="completed")
@@ -1215,6 +1215,9 @@ class DoctorsManagement:
         department_name = data.get("departmentName")
         department_description = data.get("departmentComments")
         if department_id and department_id != "new":
+            check_prev = DepartmentHospitalMapping.objects.filter(department_id=department_id,hospital_id=request.user.hospital)
+            if check_prev:
+                raise Exception("This department already exists")
             DepartmentHospitalMapping.objects.create(
                 department_id=department_id,
                 hospital_id=request.user.hospital

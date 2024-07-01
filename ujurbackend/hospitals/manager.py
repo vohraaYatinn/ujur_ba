@@ -1,6 +1,7 @@
 import razorpay
 from django.db.models import Q, Count, Avg, Prefetch
 from django.db.models.functions import Round
+import jwt
 
 from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
 from hospitals.models import HospitalDetails, LabReports, HospitalAdmin, DepartmentHospitalMapping, Department, \
@@ -152,7 +153,12 @@ class HospitalManager:
         department = data.get('department', False)
         hospitalId = data.get('hospitalId', False)
         if not hospitalId:
-            hospitalId = request.user.hospital
+            token = request.headers.get("jwtToken")
+            if not token:
+                raise Exception("You are not allowed")
+            decoded_token = jwt.decode(token, "secretKeyRight34", algorithms=['HS256'])
+            if decoded_token and decoded_token.get("hospital", False):
+                hospitalId = decoded_token.get("hospital")
         filters = Q(hospital_id=hospitalId)
         if department:
             filters &= Q(department_id=department)
