@@ -165,8 +165,6 @@ class DoctorsManagement:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
             filters &= Q(doctor__full_name__icontains = doctor_name)
-        if date:
-            filters &= Q(date_appointment__date=date)
         if slots:
             filters &= Q(slot=slots)
         if status:
@@ -1260,7 +1258,7 @@ class DoctorsManagement:
             filters &= Q(doctor__hospital=hospitals)
         if department:
             filters &= Q(doctor__department=department)
-        return PatientDoctorReviews.objects.filter(filters)
+        return PatientDoctorReviews.objects.filter(filters).select_related("patient")
 
     @staticmethod
     def get_all_hospital_reviews(request, data):

@@ -238,6 +238,13 @@ class DoctorReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
         model = PatientDoctorReviews
         fields = "__all__"
 
+class DoctorReviewsWithPatientsUserAndDoctorSerializer(serializers.ModelSerializer):
+    doctor = DoctorModelWithDepartmentHospitalSerializer()
+    patient = PatientDetailsWithUserDoctorSerializer()
+    class Meta:
+        model = PatientDoctorReviews
+        fields = "__all__"
+
 
 class HospitalReviewsWithPatientsAndDoctorSerializer(serializers.ModelSerializer):
     hospital = HospitalDoctorSerializer()

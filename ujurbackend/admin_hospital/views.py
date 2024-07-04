@@ -8,7 +8,7 @@ from admin_hospital.manager import AdminMainManagement
 from admin_hospital.serializer import AppointmentSerializer, AppointmentWithDepartmentandDoctorSerializer, \
     DoctorModelWithDepartmentHospitalSerializer, AdminsSerailizer, HospitalAdminsSerailizer, PromoCodeSerializer, \
     HospitalReviewsWithPatientsSerializer, AppointmentWithDepartmentandDoctorWithRevenueSerializer, \
-    AppointmentWithDepartmentandDoctorHospitalSerializer
+    AppointmentWithDepartmentandDoctorHospitalSerializer, HospitalReviewsWithUserPatientsSerializer
 from doctors.manager import DoctorsManagement
 from doctors.serializer import DoctorReviewsWithPatientsAndDoctorHospitalSerializer, \
     DoctorReviewsWithPatientsAndDoctorSerializer
@@ -343,7 +343,7 @@ class fetchAllReviewsHospital(APIView):
         try:
             data = request.query_params
             reviews = HospitalManager.fetch_all_hospital_reviews(data)
-            seralizer_data = HospitalReviewsWithPatientsSerializer(reviews,many=True).data
+            seralizer_data = HospitalReviewsWithUserPatientsSerializer(reviews,many=True).data
             return Response(
                 {"result": "success", "data": seralizer_data}, 200)
         except Exception as e:

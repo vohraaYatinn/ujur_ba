@@ -1,7 +1,7 @@
-from django.db.models import Q
+from django.db.models import Q, Avg
 
 from admin_hospital.models import mainAdminDetails, promoCodes
-from doctors.models import doctorDetails, Appointment, PatientDoctorReviews
+from doctors.models import doctorDetails, Appointment, PatientDoctorReviews, HospitalPatientReviews
 from hospitals.models import HospitalDetails, HospitalAdmin, LabReports, DepartmentHospitalMapping
 from patients.models import Patient
 
@@ -102,6 +102,7 @@ class AdminMainManagement:
         total_department_count = DepartmentHospitalMapping.objects.filter(hospital_id=hospital_id).count()
         total_doctor_count = doctorDetails.objects.filter(hospital_id=hospital_id).count()
         total_appointment_count = appoint_obj.count()
+        average_review = HospitalPatientReviews.objects.filter(hospital_id=hospital_id).aggregate(Avg('reviews_star'))
         total_admin_count = HospitalAdmin.objects.filter(hospital_id=hospital_id).count()
         total_reviews_count = PatientDoctorReviews.objects.filter(doctor__hospital_id=hospital_id).count()
         return {
@@ -109,7 +110,7 @@ class AdminMainManagement:
             "department":total_department_count,
             "doctor":total_doctor_count,
             "appointment":total_appointment_count,
-            "admin":total_admin_count,
+            "admin":average_review.get('reviews_star__avg', 0),
             "reviews":total_reviews_count,
         }
 

@@ -244,8 +244,10 @@ class PatientManager:
                 if lab_report:
                     req_appointment.lab_report = lab_report
                     req_appointment.save()
+            else:
+                raise Exception("No file uploaded")
         except:
-            raise Exception("Something went wrong")
+            raise Exception("No file uploaded")
 
     @staticmethod
     def apply_coupons(request, data):

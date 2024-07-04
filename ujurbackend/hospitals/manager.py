@@ -74,7 +74,7 @@ class HospitalManager:
             filters &= Q(hospital_id=hospital)
         if patient:
             filters &= Q(patient__full_name__icontains=patient)
-        reviews = HospitalPatientReviews.objects.filter(filters).select_related("hospital").select_related("patient")
+        reviews = HospitalPatientReviews.objects.filter(filters).select_related("hospital").select_related("patient","patient__user")
         return reviews
 
     @staticmethod
@@ -236,6 +236,109 @@ class HospitalManager:
                 new_id_to_add = "CMG101"
             hospital_proj = HospitalDetails.objects.create(name=hospital_name, email=email, contact_number=phone, logo=logo,  address=address, hospital_image=profile, years_of_establishment=years_of_establishment)
             new_hospital_admin = HospitalAdmin.objects.create(ujur_id= new_id_to_add, name=hospital_name, username=email, password="demo@123", hospital=hospital_proj)
+            medications = [
+                "Crocin", "Calpol", "Dolo 650",
+                "Brufen", "Ibugesic",
+                "Cetzine", "Zyrtec",
+                "Amoxil", "Mox",
+                "Azithral", "Zithromax",
+                "Glycomet", "Gluformin",
+                "Amlong", "Stamlo",
+                "Lipitor", "Atorlip",
+                "Omez", "Protium",
+                "Claritin", "Lorfast",
+                "Zantac", "Aciloc",
+                "Oral Rehydration Salts",
+                "Cyclopam", "Dicyclomine Hydrochloride",
+                "Montek", "Montair",
+                "Ciplox", "Cifran",
+                "Domstal", "Motilium",
+                "Pantocid", "Pan",
+                "Clopilet", "Plavix",
+                "Flagyl", "Metrogyl",
+                "Thyronorm", "Eltroxin",
+                "Losar", "Angioten",
+                "Lasix", "Frusenex",
+                "Disprin", "Ecosprin",
+                "Asthalin", "Ventolin",
+                "Povidone-Iodine",
+                "Candid", "Canesten",
+                "Dexona", "Decadron",
+                "Erythrocin", "Erytop",
+                "Glyclazide", "Diapride",
+                "Microzide", "Aquazide",
+                "Combiflam", "Ibugesic Plus",
+                "Ismo", "Monotrate",
+                "Nizoral", "Keto",
+                "Prinivil", "Zestril",
+                "Metolar", "Lopressor",
+                "Adalat", "Depin",
+                "Oflin", "Zanocin",
+                "Omnacortil", "Predmet",
+                "R-cin", "Rifadin",
+                "Serevent", "Seretide",
+                "Nolvadex", "Tamox",
+                "Urimax", "Flomax",
+                "Bricanyl", "Terbulin",
+                "Tetracyn", "Tetra",
+                "Ultram", "Tramazac",
+                "Depakote", "Valprol",
+                "Calaptin", "Isoptin",
+                "Coumadin", "Warf",
+                "Ambien", "Zolfresh",
+                "Chlor-Trimeton", "Aller-Chlor",
+                "Cardizem", "Dilzem",
+                "Vasotec", "Enapril",
+                "Pepcid", "Famocid",
+                "Daonil", "Euglucon",
+                "Cortef", "Solu-Cortef",
+                "Indocin", "Indocid",
+                "Lamictal", "Lamitor",
+                "Trexall", "Methotrex",
+                "Aleve", "Naprosyn",
+                "Zyprexa", "Oliza",
+                "Actos", "Pioz",
+                "Seroquel", "Qutipin",
+                "Crestor", "Rozavel",
+                "Zoloft", "Serlift",
+                "Theo-24", "Theolair",
+                "Urso", "Udiliv",
+                "Effexor", "Veniz",
+                "Otrivin", "Xylomist",
+                "Aphrodyne", "Yocon",
+                "Retrovir", "Zidolam",
+                "Paraflex", "Zoxan",
+                "Cardura", "Dosin",
+                "Nexium", "Esoz",
+                "Diflucan", "Fluka",
+                "Mucinex", "Glycodin",
+                "Apresoline", "Hycin",
+                "Tofranil", "Depsonil",
+                "Toradol", "Ketanov",
+                "Keppra", "Levet",
+                "Robaxin", "Methocare",
+                "Nimotop", "Nimo",
+                "Trileptal", "Oxetol",
+                "Inderal", "Ciplar",
+                "Accupril", "Quinapres",
+                "Risperdal", "Sizodon",
+                "Aldactone", "Spirotone",
+                "Zanaflex", "Tizalud",
+                "Incruse Ellipta",
+                "Diovan", "Valzaar",
+                "Coumadin", "Warf",
+                "Rivaroxaban",
+                "Drospirenone and Ethinyl Estradiol",
+                "Zonegran", "Zonisep"
+            ]
+            list_to_add = []
+            for range in medications:
+                check_medicine = MedicinesName()
+                check_medicine.hospital = hospital_proj
+                check_medicine.name = range
+                check_medicine.description = range
+                list_to_add.append(check_medicine)
+            MedicinesName.objects.bulk_create(list_to_add)
             if website:
                 hospital_proj.website = website
             if description:

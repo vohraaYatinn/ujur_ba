@@ -79,6 +79,14 @@ class HospitalReviewsWithPatientsSerializer(serializers.ModelSerializer):
         model = HospitalPatientReviews
         fields = "__all__"
 
+class HospitalReviewsWithUserPatientsSerializer(serializers.ModelSerializer):
+    patient = PatientDetailsWithUserDoctorSerializer()
+    hospital = HospitalSerializer()
+
+    class Meta:
+        model = HospitalPatientReviews
+        fields = "__all__"
+
 
 class DoctorAverageUserSerializer(serializers.ModelSerializer):
     user = UserSerializer()
