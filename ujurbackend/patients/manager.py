@@ -238,6 +238,7 @@ class PatientManager:
         try:
             patient_id = request.user.id
             appointment_id = data.get("appointmentId", False)
+            a="A"
             lab_report = data.get("labReport", False)
             if patient_id and appointment_id and lab_report:
                 req_appointment = Appointment.objects.get(patient__id =patient_id, id=appointment_id)
