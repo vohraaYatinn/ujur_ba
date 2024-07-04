@@ -178,9 +178,9 @@ class DoctorsManagement:
         if paymentMode:
             filters &= Q(payment_mode=paymentMode)
         if startDate:
-            filters &= Q(date_appointment__date__gt=startDate)
+            filters &= Q(date_appointment__date__gte=startDate)
         if endDate:
-            filters &= Q(date_appointment__date__lt=endDate)
+            filters &= Q(date_appointment__date__lte=endDate)
         appointments = Appointment.objects.filter(filters
         ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
@@ -203,8 +203,6 @@ class DoctorsManagement:
             filters &= Q(patient__full_name__icontains = patient_name)
         if doctor_name:
             filters &= Q(doctor__full_name__icontains = doctor_name)
-        if date:
-            filters &= Q(date_appointment__date=date)
         if slots:
             filters &= Q(slot=slots)
         if status:
@@ -218,9 +216,9 @@ class DoctorsManagement:
         if paymentMode:
             filters &= Q(payment_mode=paymentMode)
         if startDate:
-            filters &= Q(date_appointment__date__gt=startDate)
+            filters &= Q(date_appointment__date__gte=startDate)
         if endDate:
-            filters &= Q(date_appointment__date__lt=endDate)
+            filters &= Q(date_appointment__date__lte=endDate)
         appointments = Appointment.objects.filter(filters
         ).select_related("doctor", "patient", "patient__user").prefetch_related("revenues").exclude(status="created").order_by("-created_at")
         return appointments
@@ -444,7 +442,7 @@ class DoctorsManagement:
             appointment.payment_status = payment_status
             appointment.appointment_slot = int(latest_slot) + 1
             appointment.save()
-            Revenue.objects.create(appointment=appointment,booking_amount=17.7, doctor_fees=float(bookingAmount)-17.7)
+            Revenue.objects.create(appointment=appointment,booking_amount=11.8, doctor_fees=float(bookingAmount)-11.8)
             return True, appointment
         else:
             raise Exception("It Looks like you have missed something, Please try again")
