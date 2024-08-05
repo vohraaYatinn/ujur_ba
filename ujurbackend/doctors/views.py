@@ -594,3 +594,29 @@ class getAllHospitalPatient(APIView):
                 {"result": "success", "data": all_patients}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
+
+class savePrescriptionDoctor(APIView):
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            patients_obj = DoctorsManagement.doctor_prescription_download(request, data)
+
+            return Response(
+                {"result": "success", "data": "all_patients"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class checkOldAppointment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            check = DoctorsManagement.old_appointment_check_book(request, data)
+            return Response(
+                {"result": "success", "data": check}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)

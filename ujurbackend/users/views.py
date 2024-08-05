@@ -50,3 +50,24 @@ class PhoneOtpVerify(APIView):
                 return Response({"result" : "failure", "message":"Invalid  Mobile No/UJUR ID or Password"}, 200)
         except Exception as err:
             return Response(str(err), 500)
+
+class  PhoneSignUpVerify(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            verification_code = UserManager.phone_sign_up_otp(data)
+            return Response({"result" : "success", "verification_code":verification_code['data']['verificationId']}, 200)
+
+        except Exception as err:
+            return Response(str(err), 500)
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            verification_verify = UserManager.phone_signup_verify(data)
+            return Response({"result" : "success", "data":verification_verify}, 200)
+
+        except Exception as err:
+            return Response(str(err), 500)

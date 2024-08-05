@@ -72,6 +72,7 @@ class Appointment(models.Model):
     cancel_reason = models.TextField(null=True)
     razorpay_payment_id = models.TextField(null=True)
     lab_report = models.FileField(upload_to='lab_report/', blank=True, null=True)
+    prescription = models.FileField(upload_to='prescription/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
 

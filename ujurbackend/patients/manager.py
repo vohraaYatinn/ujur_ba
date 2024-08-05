@@ -341,10 +341,10 @@ class PatientManager:
 
     @staticmethod
     def change_password(request, data):
-        password = data.get("password")
-        user_id = data.get("userId")
-        if user_id and password:
-            req_user = UsersDetails.objects.filter(id=user_id)
+        password = data.get("password", False)
+        phone = data.get("phone", False)
+        if phone and password:
+            req_user = UsersDetails.objects.filter(phone="+91-"+str(phone))
         else:
             raise Exception("All fields are mandatory to enter")
         if req_user:

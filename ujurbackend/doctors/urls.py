@@ -5,7 +5,8 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     fetchDoctorOwnProfile, doctorChangePassword, dashboardDetails, dashboardPatientsDetails, dashboarDoctorReviews, \
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
     ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines, writeReview, \
-    writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment, getAllDoctorsPatient, getAllHospitalPatient
+    writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment, getAllDoctorsPatient, getAllHospitalPatient, \
+    savePrescriptionDoctor, checkOldAppointment
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -51,6 +52,8 @@ urlpatterns = [
     path(r'fetch-reviews-hospital/', writeReviewHospital.as_view(), name="fetch-reviews-hospital"),
     path(r'fetch-department-hospital/', fetchDepartmentHospital.as_view(), name="fetch-department-hospital"),
     path(r'change-status-to-queue/', QueuePatientAppointment.as_view(), name="change-status-to-queue"),
+    path(r'upload-prescription/', savePrescriptionDoctor.as_view(), name="change-status-to-queue"),
+    path(r'check-old-appointment/', checkOldAppointment.as_view(), name="check-old-appointment"),
 
 
 ]

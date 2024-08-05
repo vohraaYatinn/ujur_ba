@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.db.models import F
 from django.utils.timezone import now, timedelta
 import razorpay
+import os
 
 
 from hospitals.models import HospitalDetails, Department, DepartmentHospitalMapping, MedicinesName, HospitalAdmin
@@ -355,6 +356,14 @@ class DoctorsManagement:
         document = data.get("document")
 
         if patient_id and doctor_id and date and slot:
+            check_if_already_exist = Appointment.objects.filter(
+                patient_id=patient_id,
+                doctor_id=doctor_id,
+                slot=slot,
+                date_appointment=date,
+            ).exclude(status="created")
+            if check_if_already_exist:
+                raise Exception("The appointment is already booked in this slot.")
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment__date=date,
                     slot=slot
@@ -763,6 +772,13 @@ class DoctorsManagement:
         return HospitalDetails.objects.filter()[:int(number_of_page)*20]
 
     @staticmethod
+    def doctor_prescription_download(request, data):
+        appointment =  Appointment.objects.filter(id=258)
+        appointment[0].prescription = data['file']
+        appointment[0].save()
+
+
+    @staticmethod
     def doctor_fetch_reviews(request, data):
         filters = Q(doctor_id=request.user.doctor)
         star_search = data.get("starSearch", False)
@@ -870,13 +886,18 @@ class DoctorsManagement:
         htmlContent = data.get("htmlContent", False)
         appointmentDetails = data.get("appointmentDetails", False)
         doctorComment = data.get("doctorComment", False)
-
+        pdf = request.FILES['pdf']
+        file_name = pdf.name
+        if not file_name.lower().endswith('.pdf'):
+            file_name = f"{os.path.splitext(file_name)[0]}.pdf"
         if htmlContent and appointmentDetails:
             appointment_obj = Appointment.objects.get(id=appointmentDetails)
             appointment_obj.pdf_content = htmlContent
             if doctorComment:
                 appointment_obj.doctor_instruction = doctorComment
             appointment_obj.status = "completed"
+            appointment_obj.prescription = pdf
+            appointment_obj.prescription.name = file_name
             appointment_obj.save()
         else:
             raise Exception("You are missing something")
@@ -1634,3 +1655,20 @@ class DoctorsManagement:
                 completed_count.append(male_count)
 
         return completed_count
+
+    @staticmethod
+    def old_appointment_check_book(request, data):
+        patient_id = request.user.id
+        doctor_id = data.get("doctorId")
+        date = data.get("date")
+        slot = data.get("slot")
+
+        if patient_id and doctor_id and date and slot:
+            check_if_already_exist = Appointment.objects.filter(
+                patient_id=patient_id,
+                doctor_id=doctor_id,
+                slot=slot,
+                date_appointment=date,
+            ).exclude(status="created")
+            if check_if_already_exist:
+                raise Exception("The appointment is already booked in this slot.")

@@ -2,8 +2,7 @@ import random
 
 from django.db import transaction
 from django.db.models import Q
-
-from common_constants import CommonConstants
+import requests
 from users.models import otpPhone, UsersDetails
 
 
@@ -41,3 +40,57 @@ class UserManager:
         if check_if_user_exist:
             return "user exists"
         return False
+
+    @staticmethod
+    def phone_sign_up_otp(data):
+        phone = data.get('phone', False)
+        forgot = data.get('forgot', False)
+        if len(phone) != 10:
+            raise Exception("Please enter a valid phone number")
+        check_if_user_exist = UsersDetails.objects.filter(phone="+91-"+phone)
+        if check_if_user_exist and not forgot:
+            raise Exception("This Number is already registered")
+        if forgot and not check_if_user_exist:
+            raise Exception("This Number is not linked with any of your account")
+
+        url = 'https://cpaas.messagecentral.com/verification/v3/send'
+        headers = {
+            'authToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDLURFQkUyQjY4OTM4NTRBRCIsImlhdCI6MTcyMjMyNDU4MCwiZXhwIjoxODgwMDA0NTgwfQ.ihHWg1LXsk1WCjmYiCb0fA6sYrbqUORZjsw-0kr90w662ZlW7UCbb_O5GWx9_7gnzWdTA3zoGgmc1p2tQ2B4mg'
+        }
+        params = {
+            'countryCode': '91',
+            'customerId': 'C-DEBE2B6893854AD',
+            'flowType': 'SMS',
+            'mobileNumber': phone
+        }
+        response = requests.post(url, headers=headers, params=params)
+        if response.status_code != 200:
+            raise Exception("Please wait 60 seconds before trying again.")
+        return response.json()
+
+    @staticmethod
+    def phone_signup_verify(data):
+        phone = data.get('phoneNumber', False)
+        verfication_code = data.get('verificationCode', False)
+        firstDigit = data.get('firstDigit', False)
+        secondDigit = data.get('secondDigit', False)
+        thirdDigit = data.get('thirdDigit', False)
+        fourthDigit = data.get('fourthDigit', False)
+        otp = str(firstDigit) + str(secondDigit) + str(thirdDigit) + str(fourthDigit)
+        url = 'https://cpaas.messagecentral.com/verification/v3/validateOtp'
+        headers = {
+            'authToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDLUZBNTY5QzEzODY0QjQ5OSIsImlhdCI6MTcyMDY3NzcwOSwiZXhwIjoxODc4MzU3NzA5fQ.IKzKR57hg8vdCQux-GnGbuxw1H9BMXxrrJOS_OwUl2TZ2XxDZpDof9wcvenw6yG2Ygjcpfr8dEMVizPZaWf-KA'
+        }
+        params = {
+            'countryCode': '91',
+            'mobileNumber': phone,
+            'verificationId': verfication_code,
+            'customerId': 'C-DEBE2B6893854AD',
+            'code': otp
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            raise Exception("The OTP is either invalid or has expired.")
+
+        return response.json()['data']['verificationStatus'] == 'VERIFICATION_COMPLETED'
