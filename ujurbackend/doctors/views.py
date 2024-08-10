@@ -9,7 +9,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
     checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer, \
-    DoctorModelWithDepartmentHospitalWithKeysSerializer
+    DoctorModelWithDepartmentHospitalWithKeysSerializer, PatientAppointmentsWithUsersSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer
 
@@ -361,7 +361,7 @@ class fetchPatientProfile(APIView):
         try:
             data = request.query_params
             patient_obj = DoctorsManagement.fetch_patient_profile(request, data)
-            doctor_serialized_data = PatientAppointmentsSerializer(patient_obj, many=True).data
+            doctor_serialized_data = PatientAppointmentsWithUsersSerializer(patient_obj, many=True).data
             return Response(
                 {"result": "success", "data": doctor_serialized_data}, 200)
         except Exception as e:

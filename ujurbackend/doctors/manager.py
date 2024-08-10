@@ -451,7 +451,7 @@ class DoctorsManagement:
             appointment.payment_status = payment_status
             appointment.appointment_slot = int(latest_slot) + 1
             appointment.save()
-            Revenue.objects.create(appointment=appointment,booking_amount=11.8, doctor_fees=float(bookingAmount)-11.8)
+            Revenue.objects.create(appointment=appointment,booking_amount=10, doctor_fees=float(bookingAmount-10))
             return True, appointment
         else:
             raise Exception("It Looks like you have missed something, Please try again")
@@ -476,16 +476,16 @@ class DoctorsManagement:
     def fetch_appointment_details(request, data):
         patient_id = request.user.id
         appointment_type = data.get("appointmentType")
+        filters = Q()
+        filters &= Q(patient_id=patient_id)
         if patient_id and appointment_type:
             if appointment_type == "upcoming":
-                appoint_type = "pending"
+                filters &= Q(status="pending") | Q(status="queue")
             elif appointment_type == "completed":
-                appoint_type = "completed"
+                filters &= Q(status="completed")
             else:
-                appoint_type = "cancel"
-            latest_appointment = Appointment.objects.filter(
-                patient_id=patient_id,
-                status=appoint_type
+                filters &= Q(status="cancel")
+            latest_appointment = Appointment.objects.filter(filters
             ).select_related("doctor").order_by("-created_at")
             return latest_appointment
         else:
@@ -685,11 +685,13 @@ class DoctorsManagement:
 
     @staticmethod
     def doctor_patients_appointments(request, data):
-        date = data.get('date', False)
+        date = data.get('date', datetime.today().date())
+        slot = data.get('slots',False)
         filters = Q(doctor_id=request.user.doctor)
-        if not date:
-            raise Exception("Not Date Provided")
+
         filters &= Q(date_appointment__date = date)
+        if slot:
+            filters &= Q(slot = slot)
         pending_appointments_status = Appointment.objects.filter(
             filters & Q(status="queue")
         ).select_related("patient").order_by("-created_at")
@@ -875,7 +877,7 @@ class DoctorsManagement:
         if patientId:
             prefetch_value = Prefetch("patient_appointments", Appointment.objects.order_by("-date_appointment").order_by("-created_at"), to_attr="appointments")
             patient_obj = Patient.objects.filter(
-                id=patientId).prefetch_related(prefetch_value)
+                id=patientId).prefetch_related(prefetch_value).select_related("user")
             return patient_obj
         else:
             raise Exception("You are missing something")
@@ -888,10 +890,9 @@ class DoctorsManagement:
         doctorComment = data.get("doctorComment", False)
         pdf = request.FILES['pdf']
         file_name = pdf.name
-        if not file_name.lower().endswith('.pdf'):
-            file_name = f"{os.path.splitext(file_name)[0]}.pdf"
         if htmlContent and appointmentDetails:
             appointment_obj = Appointment.objects.get(id=appointmentDetails)
+            file_name = f"Prescription_{appointment_obj.patient.full_name}_{appointment_obj.id}_{datetime.now().strftime('%d-%m-%Y')}.pdf"
             appointment_obj.pdf_content = htmlContent
             if doctorComment:
                 appointment_obj.doctor_instruction = doctorComment

@@ -210,6 +210,15 @@ class PatientAppointmentsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class PatientAppointmentsWithUsersSerializer(serializers.ModelSerializer):
+    appointments = AppointmentWithDoctorSerializer(many=True)
+    user = UserSerializer()
+
+    class Meta:
+        model = Patient
+        fields = "__all__"
+
+
 class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorLeave
