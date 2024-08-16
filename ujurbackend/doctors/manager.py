@@ -505,8 +505,7 @@ class DoctorsManagement:
             if latest_appointment:
                 slots = doctorSlots.objects.get(doctor=latest_appointment[0].doctor)
                 return latest_appointment[0], slots, Appointment.objects.filter(date_appointment=date, slot=slot ,doctor=latest_appointment[0].doctor
-                           ).exclude(status="created").exclude(status="cancel").count() , Appointment.objects.filter(doctor=latest_appointment[0].doctor , date_appointment=date, slot=slot, status="completed"
-                           ).count()
+                           ).exclude(status="created").exclude(status="cancel").count()
             else:
                 return []
         else:
@@ -1727,7 +1726,7 @@ class DoctorsManagement:
         method = data.get("method")
         if not method or not doctor_id or method not in ["digital" , "manual"]:
             raise Exception("There is some issue while changing the method")
-        req_doctor = doctorDetails.objects.get(id=doctor_id)
+        req_doctor = doctorDetails.objects.select_related("hospital").get(id=doctor_id)
         req_doctor.prescription_mode = method
         req_doctor.save()
         return req_doctor

@@ -152,10 +152,10 @@ class fetchAppointmentDetails(APIView):
     def get(request):
         try:
             data = request.query_params
-            latest_appointment, slot, count, completed_count = DoctorsManagement.fetch_appointment_details_per_appointment(data)
+            latest_appointment, slot, count = DoctorsManagement.fetch_appointment_details_per_appointment(data)
             latest_appointment_data = AppointmentWithDoctorAndPatientSerializer(latest_appointment).data
             slot_data = DoctorSlotsSerializer(slot).data
-            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data, "count":count, "completed_count":completed_count}, 200)
+            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data, "count":count}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -642,7 +642,7 @@ class ChangePrescriptionMode(APIView):
         try:
             data = request.data
             req_doctor = DoctorsManagement.doctor_prescription_mode_change(request, data)
-            doctor_data = DoctorModelForHospitalSerializer(req_doctor).data
+            doctor_data = DoctorHospitalSerializer(req_doctor).data
             return Response(
                 {"result": "success", "message": "prescription method changed","data":doctor_data}, 200)
         except Exception as e:

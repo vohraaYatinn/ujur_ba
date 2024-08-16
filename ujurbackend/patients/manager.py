@@ -9,6 +9,7 @@ from patients.models import Patient
 from users.models import UsersDetails
 import razorpay
 from django.conf import settings
+import os
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest
 
@@ -247,7 +248,9 @@ class PatientManager:
                     req_appointment.lab_report = lab_report
                     req_appointment.save()
                 if prescription:
-                    file_name = f"Prescription_{req_appointment.patient.full_name}_{req_appointment.id}_{datetime.datetime.now().strftime('%d-%m-%Y')}.pdf"
+
+                    file_name = f"Prescription_{req_appointment.patient.full_name}_{req_appointment.id}_{datetime.datetime.now().strftime('%d-%m-%Y')}{prescription.name}"
+
                     req_appointment.prescription = prescription
                     req_appointment.prescription.name = file_name
                     req_appointment.save()
