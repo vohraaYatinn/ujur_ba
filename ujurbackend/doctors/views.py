@@ -11,7 +11,7 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer, \
     DoctorModelWithDepartmentHospitalWithKeysSerializer, PatientAppointmentsWithUsersSerializer
 from hospitals.manager import HospitalManager
-from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer
+from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer, DoctorModelForHospitalSerializer
 
 
 class DoctorFetchDashboard(APIView):
@@ -152,10 +152,10 @@ class fetchAppointmentDetails(APIView):
     def get(request):
         try:
             data = request.query_params
-            latest_appointment, slot, count = DoctorsManagement.fetch_appointment_details_per_appointment(data)
+            latest_appointment, slot, count, completed_count = DoctorsManagement.fetch_appointment_details_per_appointment(data)
             latest_appointment_data = AppointmentWithDoctorAndPatientSerializer(latest_appointment).data
             slot_data = DoctorSlotsSerializer(slot).data
-            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data, "count":count}, 200)
+            return Response({"result" : "success", "data": latest_appointment_data, "slot": slot_data, "count":count, "completed_count":completed_count}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
@@ -595,6 +595,18 @@ class getAllHospitalPatient(APIView):
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 
+class getAvailableSlots(APIView):
+
+    @staticmethod
+    def get(request):
+        try:
+            data = request.query_params
+            available_data = DoctorsManagement.all_available_slots(request, data)
+            return Response(
+                {"result": "success", "data": available_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
 class savePrescriptionDoctor(APIView):
 
     @staticmethod
@@ -618,5 +630,20 @@ class checkOldAppointment(APIView):
             check = DoctorsManagement.old_appointment_check_book(request, data)
             return Response(
                 {"result": "success", "data": check}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class ChangePrescriptionMode(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            req_doctor = DoctorsManagement.doctor_prescription_mode_change(request, data)
+            doctor_data = DoctorModelForHospitalSerializer(req_doctor).data
+            return Response(
+                {"result": "success", "message": "prescription method changed","data":doctor_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

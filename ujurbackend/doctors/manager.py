@@ -365,6 +365,7 @@ class DoctorsManagement:
             if check_if_already_exist:
                 raise Exception("The appointment is already booked in this slot.")
             latest_appointment_slot = Appointment.objects.filter(
+                    doctor_id=doctor_id,
                     date_appointment__date=date,
                     slot=slot
                     ).exclude(status="created")
@@ -503,8 +504,9 @@ class DoctorsManagement:
 
             if latest_appointment:
                 slots = doctorSlots.objects.get(doctor=latest_appointment[0].doctor)
-                return latest_appointment[0], slots, Appointment.objects.filter(date_appointment=date, slot=slot
-                           ).exclude(status="created").exclude(status="cancel").count()
+                return latest_appointment[0], slots, Appointment.objects.filter(date_appointment=date, slot=slot ,doctor=latest_appointment[0].doctor
+                           ).exclude(status="created").exclude(status="cancel").count() , Appointment.objects.filter(doctor=latest_appointment[0].doctor , date_appointment=date, slot=slot, status="completed"
+                           ).count()
             else:
                 return []
         else:
@@ -774,6 +776,41 @@ class DoctorsManagement:
         return HospitalDetails.objects.filter()[:int(number_of_page)*20]
 
     @staticmethod
+    def all_available_slots(request, data):
+        doctor_id = data.get("doctorId", False)
+        date = data.get("date", False)
+        if not date:
+            raise Exception("date is required")
+        available_slots = {
+            "morning":0,
+            "afternoon":0,
+            "evening":0
+        }
+        doctor_slots = doctorSlots.objects.filter(doctor__id=doctor_id)
+        total_morning_slots = doctor_slots[0].morning_slots
+        total_afternoon_slots = doctor_slots[0].afternoon_slots
+        total_evening_slots = doctor_slots[0].evening_slots
+        if total_morning_slots:
+            total_morning_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="morning").exclude(status="canceled").count()
+            count = total_morning_slots - total_morning_appointments
+            if count < 0:
+                count = 0
+            available_slots["morning"] = count
+        if total_afternoon_slots:
+            total_afternoon_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="afternoon").exclude(status="canceled").count()
+            count = total_afternoon_slots - total_afternoon_appointments
+            if count < 0:
+                count = 0
+            available_slots["afternoon"] = count
+        if total_evening_slots:
+            total_evening_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="evening").exclude(status="canceled").count()
+            count = total_evening_slots - total_evening_appointments
+            if count < 0:
+                count = 0
+            available_slots["evening"] = count
+        return available_slots
+
+    @staticmethod
     def doctor_prescription_download(request, data):
         appointment =  Appointment.objects.filter(id=258)
         appointment[0].prescription = data['file']
@@ -888,9 +925,13 @@ class DoctorsManagement:
         htmlContent = data.get("htmlContent", False)
         appointmentDetails = data.get("appointmentDetails", False)
         doctorComment = data.get("doctorComment", False)
-        pdf = request.FILES['pdf']
-        file_name = pdf.name
-        if htmlContent and appointmentDetails:
+        prescription_method = data.get("prescriptionMethod", False)
+        if prescription_method == "manual":
+            pdf = False
+
+        else:
+            pdf = request.FILES['pdf']
+        if htmlContent and prescription_method == "digital" and appointmentDetails:
             appointment_obj = Appointment.objects.get(id=appointmentDetails)
             file_name = f"Prescription_{appointment_obj.patient.full_name}_{appointment_obj.id}_{datetime.now().strftime('%d-%m-%Y')}.pdf"
             appointment_obj.pdf_content = htmlContent
@@ -900,6 +941,12 @@ class DoctorsManagement:
             appointment_obj.prescription = pdf
             appointment_obj.prescription.name = file_name
             appointment_obj.save()
+        elif prescription_method == "manual":
+            appointment_obj = Appointment.objects.get(id=appointmentDetails)
+            appointment_obj.status = "completed"
+            appointment_obj.prescription_method = "manual"
+            appointment_obj.save()
+
         else:
             raise Exception("You are missing something")
 
@@ -1673,3 +1720,14 @@ class DoctorsManagement:
             ).exclude(status="created")
             if check_if_already_exist:
                 raise Exception("The appointment is already booked in this slot.")
+
+    @staticmethod
+    def doctor_prescription_mode_change(request, data):
+        doctor_id = request.user.doctor
+        method = data.get("method")
+        if not method or not doctor_id or method not in ["digital" , "manual"]:
+            raise Exception("There is some issue while changing the method")
+        req_doctor = doctorDetails.objects.get(id=doctor_id)
+        req_doctor.prescription_mode = method
+        req_doctor.save()
+        return req_doctor

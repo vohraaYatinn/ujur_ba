@@ -6,7 +6,7 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
     ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines, writeReview, \
     writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment, getAllDoctorsPatient, getAllHospitalPatient, \
-    savePrescriptionDoctor, checkOldAppointment
+    savePrescriptionDoctor, checkOldAppointment, ChangePrescriptionMode, getAvailableSlots
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -24,6 +24,7 @@ urlpatterns = [
     path(r'search-details/', patientSearching.as_view(), name="fetch-patients-details"),
     path(r'get-all-doctor-patient/', getAllDoctorsPatient.as_view(), name="get-all-doctor-patient"),
     path(r'get-all-hospital-patient/', getAllHospitalPatient.as_view(), name="get-all-hospital-patient"),
+    path(r'get-available-slots/', getAvailableSlots.as_view(), name="get-available-slots"),
 
 
     # doctor app api
@@ -54,6 +55,7 @@ urlpatterns = [
     path(r'change-status-to-queue/', QueuePatientAppointment.as_view(), name="change-status-to-queue"),
     path(r'upload-prescription/', savePrescriptionDoctor.as_view(), name="change-status-to-queue"),
     path(r'check-old-appointment/', checkOldAppointment.as_view(), name="check-old-appointment"),
+    path(r'change-prescription-mode/', ChangePrescriptionMode.as_view(), name="change-prescription-mode"),
 
 
 ]

@@ -163,7 +163,7 @@ class uploadCustomerLabReport(APIView):
         try:
             data = request.data
             user_change = PatientManager.upload_customer_lab_report(request, data)
-            return Response({"result" : "success", "message": "Lab Report Uploaded Successfully"}, 200)
+            return Response({"result" : "success", "message": "File Uploaded Successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
 

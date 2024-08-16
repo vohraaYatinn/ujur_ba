@@ -20,6 +20,7 @@ class doctorDetails(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
     profile_picture = models.ImageField(upload_to='doctor_profiles/', blank=True, null=True)
     signature = models.ImageField(upload_to='doctor_sign/', blank=True, null=True)
+    prescription_mode = models.CharField(max_length=200, null=True, default="digital")
     hospital = models.ForeignKey(HospitalDetails, on_delete=models.CASCADE, related_name="hospital_doctors")
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -64,6 +65,7 @@ class Appointment(models.Model):
     slot = models.CharField(max_length=100)
     date_appointment = models.DateTimeField()
     status = models.CharField(max_length=100, default="created")
+    prescription_method = models.CharField(max_length=100, default="digital")
     payment_mode = models.CharField(max_length=100, null=True)
     payment_status = models.CharField(max_length=100, null=True)
     patients_query = models.TextField(null=True)

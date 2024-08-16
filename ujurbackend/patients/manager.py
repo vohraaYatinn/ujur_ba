@@ -1,6 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 import json
+import datetime
 
 from admin_hospital.models import promoCodes
 from doctors.models import PatientDoctorReviews, HospitalPatientReviews, Appointment
@@ -238,12 +239,17 @@ class PatientManager:
         try:
             patient_id = request.user.id
             appointment_id = data.get("appointmentId", False)
-            a="A"
             lab_report = data.get("labReport", False)
-            if patient_id and appointment_id and lab_report:
+            prescription = data.get("prescription", False)
+            if patient_id and appointment_id and (lab_report or prescription):
                 req_appointment = Appointment.objects.get(patient__id =patient_id, id=appointment_id)
                 if lab_report:
                     req_appointment.lab_report = lab_report
+                    req_appointment.save()
+                if prescription:
+                    file_name = f"Prescription_{req_appointment.patient.full_name}_{req_appointment.id}_{datetime.datetime.now().strftime('%d-%m-%Y')}.pdf"
+                    req_appointment.prescription = prescription
+                    req_appointment.prescription.name = file_name
                     req_appointment.save()
             else:
                 raise Exception("No file uploaded")
