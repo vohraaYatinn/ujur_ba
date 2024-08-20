@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from doctors.models import doctorDetails, doctorSlots, PatientDoctorReviews, Appointment, FavDoctors, DoctorLeave, \
-    ResetPasswordRequest, HospitalPatientReviews, Revenue
+    ResetPasswordRequest, HospitalPatientReviews, Revenue, getChiefQuery, labTests
 from hospitals.models import MedicinesName, ReferToDoctors
 from hospitals.serializer import HospitalSerializer, DepartmentSerializer, HospitalDoctorSerializer
 from patients.models import Patient
@@ -297,4 +297,16 @@ class AppointmentWithDoctorSerializer(serializers.ModelSerializer):
     doctor = DoctorModelWithHospitalSerializer()
     class Meta:
         model = Appointment
+        fields = "__all__"
+
+
+class cheifQuerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = getChiefQuery
+        fields = ["value","label"]
+
+
+class getLabTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = labTests
         fields = "__all__"

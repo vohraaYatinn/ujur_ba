@@ -9,7 +9,8 @@ from doctors.serializer import DoctorSerializer, DocotrSlotsSerializer, DoctorRe
     PatientDetailsWithUserDoctorSerializer, PatientAppointmentsSerializer, LeaveSerializer, \
     AppointmentWithDoctorAndPatientSerializer, DoctorModelSerializer, DoctorHospitalSerializer, MedicinesSerializer, \
     checkReviewSerializer, checkHospitalReviewSerializer, DoctorModelWithDepartmentHospitalSerializer, \
-    DoctorModelWithDepartmentHospitalWithKeysSerializer, PatientAppointmentsWithUsersSerializer
+    DoctorModelWithDepartmentHospitalWithKeysSerializer, PatientAppointmentsWithUsersSerializer, cheifQuerySerializer, \
+    getLabTestSerializer
 from hospitals.manager import HospitalManager
 from hospitals.serializer import DepartmentSerializer, HospitalDoctorSerializer, DoctorModelForHospitalSerializer
 
@@ -645,5 +646,65 @@ class ChangePrescriptionMode(APIView):
             doctor_data = DoctorHospitalSerializer(req_doctor).data
             return Response(
                 {"result": "success", "message": "prescription method changed","data":doctor_data}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+
+class getChiefQuery(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            chief_query , lab_tests = DoctorsManagement.get_cheif_query(request)
+            cheif_query = cheifQuerySerializer(chief_query, many=True).data
+            lab_tests = getLabTestSerializer(lab_tests, many=True).data
+            return Response(
+                {"result": "success", "message": "prescription method changed","data":cheif_query, "lab_tests":lab_tests}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            cheif_query = DoctorsManagement.add_new_cheif_query(request, data)
+            return Response(
+                {"result": "success", "message": "cheif query added successfully"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class getLabTest(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+
+    @staticmethod
+    def get(request):
+        try:
+            lab_Test = DoctorsManagement.get_lab_tests(request)
+            lab_test = getLabTestSerializer(lab_Test, many=True).data
+            return Response(
+                {"result": "success", "message": "prescription method changed","data":lab_test}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            lab_Test = DoctorsManagement.change_lab_tests(request, data)
+            return Response(
+                {"result": "success", "message": "prescription method changed"}, 200)
+        except Exception as e:
+            return Response({"result" : "failure", "message":str(e)}, 500)
+
+class addDepartmentDoctor(APIView):
+    permission_classes = [IsDoctorAuthenticated]
+    @staticmethod
+    def post(request):
+        try:
+            data = request.data
+            add_doctor = DoctorsManagement.add_doctor_department(request, data)
+            return Response(
+                {"result": "success", "message": "department added successfully"}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)

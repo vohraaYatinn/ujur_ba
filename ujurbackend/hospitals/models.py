@@ -42,6 +42,7 @@ class HospitalAdmin(models.Model):
 class Department(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True,  null=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         managed = True

@@ -154,3 +154,21 @@ class ResetPasswordRequest(models.Model):
     class Meta:
         managed = True
         db_table = "reset_password"
+
+class getChiefQuery(models.Model):
+    value = models.CharField(max_length=200, null=True)
+    label = models.TextField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = True
+        db_table = "get_chief_query"
+
+class labTests(models.Model):
+    value = models.CharField(max_length=200, null=True)
+    label = models.TextField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = True
+        db_table = "lab_tests"

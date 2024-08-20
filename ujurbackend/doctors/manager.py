@@ -1,7 +1,7 @@
 from sqlite3 import IntegrityError
 
 from doctors.models import doctorDetails, doctorSlots, FavDoctors, Appointment, PatientDoctorReviews, DoctorLeave, \
-    ResetPasswordRequest, HospitalPatientReviews, Revenue
+    ResetPasswordRequest, HospitalPatientReviews, Revenue, getChiefQuery, labTests
 from django.db.models import Avg, Count, Prefetch
 from django.db.models.functions import Round
 from django.db import transaction
@@ -1450,7 +1450,7 @@ class DoctorsManagement:
             departments_id_tuples = DepartmentHospitalMapping.objects.filter(hospital_id=req_doctor.hospital).values_list("department")
             if departments_id_tuples:
                 departments_id = [dept[0] for dept in departments_id_tuples]
-                department_names = Department.objects.filter(id__in = list(departments_id))
+                department_names = Department.objects.filter(id__in = list(departments_id)).order_by("-created_at")
             return department_names
         except Exception as e:
             raise Exception("Something went Wrong")
@@ -1730,3 +1730,50 @@ class DoctorsManagement:
         req_doctor.prescription_mode = method
         req_doctor.save()
         return req_doctor
+
+    @staticmethod
+    def get_cheif_query(request):
+        chief_query = getChiefQuery.objects.filter().order_by("-created_at")
+        lab_tests = labTests.objects.filter().order_by("-created_at")
+        return chief_query , lab_tests
+
+    @staticmethod
+    def add_new_cheif_query(request, data):
+        new_label = data.get("label")
+        if not new_label:
+            raise Exception("There is a error while adding the new label")
+        chief_query = getChiefQuery.objects.create(value=new_label, label=new_label)
+        return chief_query
+
+    @staticmethod
+    def get_lab_tests(request):
+        lab_Test = labTests.objects.filter()
+        return lab_Test
+
+    @staticmethod
+    def change_lab_tests(request, data):
+        new_label = data.get("label")
+        lab_Test = labTests.objects.create(
+            label=new_label,
+            value=new_label
+        )
+        return lab_Test
+
+    @staticmethod
+    @transaction.atomic
+    def add_doctor_department(request, data):
+        doctor = doctorDetails.objects.filter(id=request.user.doctor)[0]
+        department_name = data.get("label")
+        if not department_name:
+            raise Exception("There is a error in the department name")
+        if department_name:
+            department_id = Department.objects.create(
+                name=department_name,
+                description=department_name
+            )
+            DepartmentHospitalMapping.objects.create(
+                department=department_id,
+                hospital_id=doctor.hospital.id
+            )
+            return True
+        return False

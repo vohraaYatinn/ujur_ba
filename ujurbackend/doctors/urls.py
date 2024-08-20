@@ -6,7 +6,8 @@ from doctors.views import DoctorFetchDashboard, DoctorFetchSingle, DoctorSlots, 
     changeDoctorProfile, fetchPatientProfile, fetchPatientDocument, doctorLeaveApply, patientSearching, \
     ApplyForgotPasswordRequest, handleDoctorImages, handleDoctorTokenOnRefersh, handleDoctorMedicines, writeReview, \
     writeReviewHospital, fetchDepartmentHospital, QueuePatientAppointment, getAllDoctorsPatient, getAllHospitalPatient, \
-    savePrescriptionDoctor, checkOldAppointment, ChangePrescriptionMode, getAvailableSlots
+    savePrescriptionDoctor, checkOldAppointment, ChangePrescriptionMode, getAvailableSlots, getChiefQuery, getLabTest, \
+    addDepartmentDoctor
 
 urlpatterns = [
     path(r'dashboard-doctor/', DoctorFetchDashboard.as_view(), name="dashboard-doctors"),
@@ -56,7 +57,13 @@ urlpatterns = [
     path(r'upload-prescription/', savePrescriptionDoctor.as_view(), name="change-status-to-queue"),
     path(r'check-old-appointment/', checkOldAppointment.as_view(), name="check-old-appointment"),
     path(r'change-prescription-mode/', ChangePrescriptionMode.as_view(), name="change-prescription-mode"),
+    path(r'get-cheif-query/', getChiefQuery.as_view(), name="get-cheif-query"),
+    path(r'get-lab-test/', getLabTest.as_view(), name="get-lab-test"),
+    path(r'change-cheif-query/', getChiefQuery.as_view(), name="get-cheif-query"),
+    path(r'change-lab-test/', getLabTest.as_view(), name="get-lab-test"),
+    path(r'add-department-doctor/', addDepartmentDoctor.as_view(), name="add-department-doctor"),
 
 
 ]
+
 
