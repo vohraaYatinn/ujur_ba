@@ -791,19 +791,19 @@ class DoctorsManagement:
         total_afternoon_slots = doctor_slots[0].afternoon_slots
         total_evening_slots = doctor_slots[0].evening_slots
         if total_morning_slots:
-            total_morning_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="morning").exclude(status="canceled").count()
+            total_morning_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="morning").exclude(status="canceled").exclude(status="created").count()
             count = total_morning_slots - total_morning_appointments
             if count < 0:
                 count = 0
             available_slots["morning"] = count
         if total_afternoon_slots:
-            total_afternoon_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="afternoon").exclude(status="canceled").count()
+            total_afternoon_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="afternoon").exclude(status="canceled").exclude(status="created").count()
             count = total_afternoon_slots - total_afternoon_appointments
             if count < 0:
                 count = 0
             available_slots["afternoon"] = count
         if total_evening_slots:
-            total_evening_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="evening").exclude(status="canceled").count()
+            total_evening_appointments = Appointment.objects.filter(date_appointment__date=date, doctor__id=doctor_id, slot="evening").exclude(status="canceled").exclude(status="created").count()
             count = total_evening_slots - total_evening_appointments
             if count < 0:
                 count = 0
