@@ -440,7 +440,8 @@ class DoctorsManagement:
             ).select_related("doctor")[0]
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment=appointment.date_appointment,
-                    slot=appointment.slot
+                    slot=appointment.slot,
+                    doctor=appointment.doctor,
                     ).exclude(status="created")
             latest_appointment = latest_appointment_slot.order_by('-created_at').first()
             if latest_appointment:
