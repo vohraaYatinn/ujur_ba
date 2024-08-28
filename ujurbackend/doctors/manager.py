@@ -438,11 +438,13 @@ class DoctorsManagement:
             appointment = Appointment.objects.filter(
                 id=booking_id
             ).select_related("doctor")[0]
+            appoint_list = ["completed", "pending", "queue"]
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment=appointment.date_appointment,
                     slot=appointment.slot,
                     doctor=appointment.doctor,
-                    ).exclude(status="created")
+                    status__in=appoint_list
+                    )
             latest_appointment = latest_appointment_slot.order_by('-created_at').first()
             if latest_appointment:
                 latest_slot = latest_appointment.appointment_slot
