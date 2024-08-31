@@ -369,7 +369,7 @@ class DoctorsManagement:
                     date_appointment__date=date,
                     slot=slot
                     ).exclude(status="created")
-            latest_appointment = latest_appointment_slot.order_by('-appointment_slot').first()
+            latest_appointment = latest_appointment_slot.order_by('-created_at').first()
             if latest_appointment:
                 latest_slot = latest_appointment.appointment_slot
             else:
@@ -443,7 +443,7 @@ class DoctorsManagement:
                     slot=appointment.slot,
                     doctor=appointment.doctor,
                     ).exclude(status="created")
-            latest_appointment = latest_appointment_slot.order_by('-appointment_slot').first()
+            latest_appointment = latest_appointment_slot.order_by('-created_at').first()
             if latest_appointment:
                 latest_slot = latest_appointment.appointment_slot
             else:
