@@ -658,7 +658,7 @@ class DoctorsManagement:
             appointments = Appointment.objects.filter(
                 doctor_id=request.user.doctor,
                 date_appointment__date=current_date.date(),
-            ).values('status').annotate(count=Count('status'))
+            ).exclude(status="created").values('status').annotate(count=Count('status'))
 
             total_count = sum(appt['count'] for appt in appointments)
             pending_count = sum(appt['count'] for appt in appointments if appt['status'] == 'pending')

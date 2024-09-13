@@ -28,13 +28,13 @@ class PatientManager:
             first_name = data.get("firstName")
             last_name = data.get("lastName")
             gender = data.get("gender")
-            email = data.get("email")
+            email = data.get("email", False)
             date_of_birth = data.get("dob")
             weight = data.get("weight", None)
             height = data.get("height", None)
             district = data.get("district")
             block = data.get("block")
-            if phone_number and first_name and last_name and gender and email and date_of_birth and district and block:
+            if phone_number and first_name and last_name and gender and date_of_birth and district and block:
                 user_check = UsersDetails.objects.filter(Q(email=email) | Q(phone=phone_number))
                 if user_check:
                     raise Exception("This Phone number or Emails already exists")
