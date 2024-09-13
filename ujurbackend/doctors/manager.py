@@ -442,16 +442,11 @@ class DoctorsManagement:
                     date_appointment=appointment.date_appointment,
                     slot=appointment.slot,
                     doctor=appointment.doctor,
-                    ).exclude(status="created")
-            latest_appointment = latest_appointment_slot.order_by('-created_at').first()
-            if latest_appointment:
-                latest_slot = latest_appointment.appointment_slot
-            else:
-                latest_slot = 0
+                    ).exclude(status="created").count()
             appointment.status = "pending"
             appointment.payment_mode = paymentMode
             appointment.payment_status = payment_status
-            appointment.appointment_slot = int(latest_slot) + 1
+            appointment.appointment_slot = latest_appointment_slot + 1
             appointment.save()
             Revenue.objects.create(appointment=appointment,booking_amount=10, doctor_fees=float(bookingAmount-10))
             return True, appointment
