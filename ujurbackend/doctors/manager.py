@@ -540,7 +540,6 @@ class DoctorsManagement:
         department = data.get('department', False)
         paymentStatus = data.get('paymentStatus', False)
         paymentMode = data.get('paymentMode', False)
-
         if paymentStatus:
             filters &= Q(payment_status=paymentStatus)
         if paymentMode:
@@ -557,7 +556,7 @@ class DoctorsManagement:
             filters &= Q(status=status)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor", "doctor__hospital").prefetch_related("revenues").select_related("patient", "patient__user").order_by("-created_at", "appointment_slot")
+        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor", "doctor__hospital").prefetch_related("revenues").select_related("patient", "patient__user").order_by("created_at")
         return doctor_leave
 
     @staticmethod
