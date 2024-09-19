@@ -35,7 +35,11 @@ class PatientManager:
             district = data.get("district")
             block = data.get("block")
             if phone_number and first_name and last_name and gender and date_of_birth and district and block:
-                user_check = UsersDetails.objects.filter(Q(email=email) | Q(phone=phone_number))
+                query_for_check = Q()
+                query_for_check &= Q(phone=phone_number)
+                if len(email):
+                    query_for_check &= Q(email=email)
+                user_check = UsersDetails.objects.filter(query_for_check)
                 if user_check:
                     raise Exception("This Phone number or Emails already exists")
                 user = UsersDetails.objects.create(phone=phone_number, email=email,password=password, role="patient")
@@ -154,7 +158,7 @@ class PatientManager:
         document = data.get("document", False)
         firstName = data.get("firstName")
         lastName = data.get("lastName")
-        email = data.get("email")
+        email = data.get("email", False)
         password = data.get("password")
         phoneNumber = data.get("phoneNumber")
         gender = data.get("gender")
@@ -168,10 +172,12 @@ class PatientManager:
         new_patient = Patient.objects.get(id=user_created)
         new_patient.user=patient.user
 
-        if email or phoneNumber:
+        if len(email) or phoneNumber:
             user_check = UsersDetails.objects.exclude(id=new_patient.user.id).filter(Q(email=email) | Q(phone=phoneNumber))
             if user_check:
                 raise Exception("This Phone number or Emails already exists")
+        if email == "":
+            new_patient.user.email = email
         if firstName and lastName:
             new_patient.full_name = firstName + " " + lastName
         if gender:

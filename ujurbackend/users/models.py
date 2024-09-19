@@ -4,7 +4,7 @@ from common_constants import CommonConstants
 
 
 class UsersDetails(models.Model):
-    email = models.EmailField(null=True)
+    email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=20, null=True)
     password = models.CharField(max_length=50, null=True)
     verified = models.BooleanField(default=False)
