@@ -435,14 +435,16 @@ class DoctorsManagement:
         if paymentMode == "Online":
             payment_status = "Paid"
         if booking_id:
-            appointment = Appointment.objects.filter(
+            appointment = Appointment.objects.select_for_update().filter(
                 id=booking_id
-            ).select_related("doctor")[0]
+            ).select_related("doctor").first()
+            if not appointment:
+                raise Exception("Appointment not found")
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment=appointment.date_appointment,
                     slot=appointment.slot,
                     doctor=appointment.doctor,
-                    ).exclude(status="created").count()
+                    ).exclude(status="created").select_for_update().count()
             appointment.status = "pending"
             appointment.payment_mode = paymentMode
             appointment.payment_status = payment_status
