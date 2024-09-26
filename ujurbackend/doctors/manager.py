@@ -450,7 +450,7 @@ class DoctorsManagement:
             appointment.payment_status = payment_status
             appointment.appointment_slot = latest_appointment_slot + 1
             appointment.save()
-            Revenue.objects.create(appointment=appointment,booking_amount=10, doctor_fees=float(bookingAmount-10))
+            Revenue.objects.create(appointment=appointment, booking_amount=10, doctor_fees=float(bookingAmount-10))
             return True, appointment
         else:
             raise Exception("It Looks like you have missed something, Please try again")

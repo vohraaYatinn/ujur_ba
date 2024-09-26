@@ -172,7 +172,7 @@ class PatientManager:
         new_patient = Patient.objects.get(id=user_created)
         new_patient.user=patient.user
 
-        if len(email) or phoneNumber:
+        if (email or phoneNumber) and email != "":
             user_check = UsersDetails.objects.exclude(id=new_patient.user.id).filter(Q(email=email) | Q(phone=phoneNumber))
             if user_check:
                 raise Exception("This Phone number or Emails already exists")
