@@ -46,9 +46,20 @@ class DoctorsManagement:
         doctor_id = data.get("doctorId")
         start_date = datetime.today()
         dates_and_days = []
+        doctor_leaves = DoctorLeave.objects.filter(
+            doctor_id=doctor_id,
+            status="APPROVED",
+            from_date__lte=start_date + timedelta(days=5),
+            to_date__gte=start_date
+        )
+
         for i in range(6):
             date = start_date + timedelta(days=i)
-            dates_and_days.append((date.strftime("%Y-%m-%d"), date.strftime("%A")))
+            on_leave = any(leave.from_date <= date.date() <= leave.to_date for leave in doctor_leaves)
+
+            dates_and_days.append((date.strftime("%Y-%m-%d"), date.strftime("%A"), on_leave))
+
+
         return doctorSlots.objects.filter(doctor_id=doctor_id).select_related("doctor")[0], dates_and_days
 
     @staticmethod
@@ -127,7 +138,7 @@ class DoctorsManagement:
         paymentStatus = data.get('paymentStatus', False)
         paymentMode = data.get('paymentMode', False)
         if patient_name:
-            filters &= Q(patient__full_name__icontains = patient_name)
+            filters &= Q(patient__full_name__icontains=patient_name.strip())
         if doctor_name:
             filters &= Q(doctor__full_name__icontains = doctor_name)
         if date:
@@ -274,7 +285,7 @@ class DoctorsManagement:
 
         filters = Q()
         if patient_name:
-            filters &= Q(full_name__icontains = patient_name)
+            filters &= Q(full_name__icontains = patient_name.strip())
         if doctor_name:
             filters &= Q(full_name__icontains = doctor_name)
         unique_patients = Patient.objects.filter(filters).select_related("user").order_by("-created_at")
@@ -524,11 +535,26 @@ class DoctorsManagement:
         filters = Q(doctor__hospital_id=request.user.hospital)
         doctor_name = data.get('doctorName', False)
         department = data.get('department', False)
+        month = data.get('month', False)
+        year = data.get('year', False)
+        sort = data.get('sort', False)
+        status = data.get('status', False)
         if doctor_name:
             filters &= Q(doctor__full_name__icontains = doctor_name)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = DoctorLeave.objects.filter(filters).select_related("doctor")
+        if month:
+            filters &= Q(from_date__month=month)
+        if year:
+            filters &= Q(to_date__year=year)
+        if status:
+            filters &= Q(status=status)
+
+        doctor_leave = []
+        if sort == "true":
+            doctor_leave = DoctorLeave.objects.filter(filters).select_related("doctor").order_by("created_at")
+        elif sort == "false":
+            doctor_leave = DoctorLeave.objects.filter(filters).select_related("doctor").order_by("-created_at")
         return doctor_leave
 
     @staticmethod
@@ -536,6 +562,7 @@ class DoctorsManagement:
         filters = Q(doctor__hospital_id=request.user.hospital)
         patient_name = data.get('patientName', False)
         doctor_name = data.get('doctorName', False)
+        sort = data.get('sort', False)
         date = data.get('date', False)
         slots = data.get('slots', False)
         status = data.get('status', False)
@@ -558,7 +585,15 @@ class DoctorsManagement:
             filters &= Q(status=status)
         if department:
             filters &= Q(doctor__department=department)
-        doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor", "doctor__hospital").prefetch_related("revenues").select_related("patient", "patient__user").order_by("created_at")
+        if sort == 'true':
+            doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor",
+                                                                                                        "doctor__hospital").prefetch_related(
+                "revenues").select_related("patient", "patient__user").order_by("created_at")
+        elif sort == 'false':
+            doctor_leave = Appointment.objects.filter(filters).exclude(status="created").select_related("doctor",
+                                                                                                        "doctor__hospital").prefetch_related(
+                "revenues").select_related("patient", "patient__user").order_by("-created_at")
+
         return doctor_leave
 
     @staticmethod
@@ -999,7 +1034,7 @@ class DoctorsManagement:
         if doc_obj:
             if action == "Approve":
                 doc_obj[0].status = "APPROVED"
-                doc_obj[0].doctor.is_active = False
+                # doc_obj[0].doctor.is_active = False
                 doc_obj[0].doctor.save()
                 req_appointment = Appointment.objects.filter(date_appointment__lte=doc_obj[0].to_date, date_appointment__gte=doc_obj[0].from_date, doctor=doc_obj[0].doctor, status="pending")
                 for range in req_appointment:
@@ -1662,7 +1697,8 @@ class DoctorsManagement:
                 male_count = Appointment.objects.filter(
                     date_appointment__date=start,
                     doctor_id=doctor_id,
-                    doctor__hospital_id=request.user.hospital
+                    doctor__hospital_id=request.user.hospital,
+                    status="completed"
                 ).count()
                 completed_count.append(male_count)
 
@@ -1679,7 +1715,8 @@ class DoctorsManagement:
                 male_count = Appointment.objects.filter(
                     date_appointment__date__range=(start, end),
                     doctor_id=doctor_id,
-                    doctor__hospital_id=request.user.hospital
+                    doctor__hospital_id=request.user.hospital,
+                    status="completed"
                 ).count()
 
 
@@ -1694,7 +1731,8 @@ class DoctorsManagement:
                 male_count = Appointment.objects.filter(
                     date_appointment__date__range=(start, end),
                     doctor_id=doctor_id,
-                    doctor__hospital_id=request.user.hospital
+                    doctor__hospital_id=request.user.hospital,
+                    status="completed"
                 ).count()
                 completed_count.append(male_count)
 
