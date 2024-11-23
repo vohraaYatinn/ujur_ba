@@ -1687,7 +1687,6 @@ class DoctorsManagement:
         today = now().date()
         completed_count = []
         female_data = []
-
         if timeframe == 'week':
             # Get the Monday of the current week
             start_date = today - timedelta(days=today.weekday())
@@ -1698,8 +1697,7 @@ class DoctorsManagement:
                     date_appointment__date=start,
                     doctor_id=doctor_id,
                     doctor__hospital_id=request.user.hospital,
-                    status="completed"
-                ).count()
+                ).exclude(status="created").count()
                 completed_count.append(male_count)
 
         elif timeframe == 'month':
@@ -1716,8 +1714,7 @@ class DoctorsManagement:
                     date_appointment__date__range=(start, end),
                     doctor_id=doctor_id,
                     doctor__hospital_id=request.user.hospital,
-                    status="completed"
-                ).count()
+                ).exclude(status="created").count()
 
 
                 completed_count.append(male_count)
@@ -1732,8 +1729,7 @@ class DoctorsManagement:
                     date_appointment__date__range=(start, end),
                     doctor_id=doctor_id,
                     doctor__hospital_id=request.user.hospital,
-                    status="completed"
-                ).count()
+                ).exclude(status="created").count()
                 completed_count.append(male_count)
 
         return completed_count
