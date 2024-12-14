@@ -142,7 +142,9 @@ class fetchLatestAppointment(APIView):
         try:
             data = request.query_params
             latest_appointment = DoctorsManagement.fetch_patient_latest_appointment(request, data)
-            latest_appointment_data = AppointmentSerializer(latest_appointment).data
+            latest_appointment_data = {}
+            if latest_appointment != []:
+                latest_appointment_data = AppointmentSerializer(latest_appointment).data
             return Response({"result" : "success", "data": latest_appointment_data}, 200)
         except Exception as e:
             return Response({"result" : "failure", "message":str(e)}, 500)
