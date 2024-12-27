@@ -79,12 +79,6 @@ class Appointment(models.Model):
 
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['doctor', 'slot', 'date_appointment', 'appointment_slot'],
-                name='unique_appointment_per_doctor_slot'
-            )
-        ]
         managed = True
         db_table = "appointment"
 

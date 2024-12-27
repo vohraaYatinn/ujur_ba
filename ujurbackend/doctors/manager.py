@@ -450,26 +450,18 @@ class DoctorsManagement:
             ).select_related("doctor").first()
             if not appointment:
                 raise Exception("Appointment not found")
-
-            # Lock and fetch all relevant appointments for the same doctor and slot
             latest_appointment_slot = Appointment.objects.filter(
                     date_appointment=appointment.date_appointment,
                     slot=appointment.slot,
                     doctor=appointment.doctor,
-                    ).exclude(status="created").select_for_update()
-
-            # Calculate the next available appointment slot
-            existing_slots = latest_appointment_slot.values_list('appointment_slot', flat=True)
-            next_slot = int(max(existing_slots, default=0)) + 1
-
+                    ).exclude(status="created").select_for_update().count()
             appointment.status = "pending"
             appointment.payment_mode = paymentMode
             appointment.payment_status = payment_status
-            appointment.appointment_slot = next_slot
+            appointment.appointment_slot = latest_appointment_slot + 1
             appointment.save()
             Revenue.objects.create(appointment=appointment, booking_amount=10, doctor_fees=float(bookingAmount-10))
             return True, appointment
-
         else:
             raise Exception("It Looks like you have missed something, Please try again")
 
